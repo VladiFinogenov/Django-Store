@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import Product, Review, Category
+from shop.models import Product, Review, Category
 
 admin.site.register(Product)
+admin.site.register(Category)
 
 
 @admin.register(Review)
-class CommentAdmin(admin.ModelAdmin):
+class ReviewAdmin(admin.ModelAdmin):
     list_display = ['product', 'author', 'review', 'created_at']
     list_select_related = ['product', 'author']
     search_fields = ('product__name',)
@@ -41,8 +42,3 @@ class CommentAdmin(admin.ModelAdmin):
         """
 
         return (obj.text[:100] + '...') if len(obj.text) > 100 else obj.text
-
-
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    pass

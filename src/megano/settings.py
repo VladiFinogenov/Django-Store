@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,12 +45,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'django_cleanup.apps.CleanupConfig',
     'taggit',
-
+    'banners.apps.BannersConfig',
+    'accounts.apps.AccountsConfig',
     'shop.apps.ProductsConfig',
-    'users.apps.UsersConfig'
 ]
 
 MIDDLEWARE = [
+    "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -58,9 +60,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
 ]
-
-AUTH_USER_MODEL = 'users.CustomUser'
 
 if DEBUG:
     INSTALLED_APPS += [
@@ -95,7 +96,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # 'shop.context_processors.categories',
+                'shop.context_processors.categories',
             ],
         },
     },
@@ -114,12 +115,11 @@ DATABASES = {
 }
 
 # CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-#         "LOCATION": "127.0.0.1:11211",
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+#         'LOCATION': '127.0.0.1:11211',
 #     }
 # }
-
 
 # DATABASES = {
 #     "default": {
@@ -180,3 +180,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DEFAULT_CACHE_TIME = 24 * 60 * 60
+
+AUTH_USER_MODEL = 'accounts.User'

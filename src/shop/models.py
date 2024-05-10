@@ -33,18 +33,18 @@ class Category(models.Model):
 class Product(models.Model):
     """
       Модель Product представляет товар,
-      который можно продавать в интернет-магазине.
+      кoоторый можно продавать в интернет-магазине.
     """
 
     class Meta:
         ordering = ["name"]
         verbose_name = "product"
-        verbose_name_plural = "shop"
+        verbose_name_plural = "products"
 
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(blank=True, null=True)
     preview = models.ImageField(null=True, blank=True, upload_to=product_preview_directory_path)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     available = models.BooleanField(default=True)
     tags = TaggableManager(blank=True)
 
@@ -52,7 +52,7 @@ class Product(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("shop:product_detail", kwargs={"pk": self.pk})
+        return reverse("product_details", kwargs={"pk": self.pk})
 
 
 class Review(models.Model):
@@ -71,6 +71,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews_author'
     )
+
     text = models.TextField(
         max_length=3000
     )
