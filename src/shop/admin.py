@@ -1,8 +1,53 @@
 from django.contrib import admin
-from shop.models import Product, Review, Category
+from .models import (
+    Product,
+    Review,
+    Category,
+    Attribute,
+    ProductAttribute,
+    Seller,
+    SellerProduct,
+    HistoryProduct,
+)
+from .forms import AttributeFormSet, ProductAttributeFormSet, CustomAttributeAdminForm
 
-admin.site.register(Product)
-admin.site.register(Category)
+
+@admin.register(HistoryProduct)
+class HistoryProductAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'created_at')
+    list_filter = ('user', 'created_at')
+
+    def has_add_permission(self, request):
+        """
+        Метод запрещает создавать историю просмотра в админ-панели
+        """
+
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Метод запрещает изменять историю просмотра в админ-панели.
+        """
+
+        return False
+
+    def user_name(self, obj):
+        return obj.user.username
+
+    user_name.short_description = 'User'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'product__category__parent')
+
+
+@admin.register(Seller)
+class SellerAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(SellerProduct)
+class SellerProductAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Review)
@@ -42,3 +87,79 @@ class ReviewAdmin(admin.ModelAdmin):
         """
 
         return (obj.text[:100] + '...') if len(obj.text) > 100 else obj.text
+
+
+class AttributesInLine(admin.TabularInline):
+    """
+    Инлайн-форма создания attributes (характеристик), которая буде добавлена в админ панель модели Category
+    """
+
+    model = Attribute
+    formset = AttributeFormSet
+    extra = 1
+
+
+class ProductAttributeInline(admin.TabularInline):
+    """
+    Создание инлайновой формы добавления характеристик в административной панели Django.
+    Родительская модель Product
+    """
+    model = ProductAttribute
+    formset = ProductAttributeFormSet
+    extra = 1
+
+    """
+    Настройки виджета полей ForeignKey attribute (характеристика) в административной панели Djangoю
+    Цель: при выборе attribute доступны только attriutes (характреристики), которые связаны с категорией товара
+    """
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "attribute":
+            # Получаем категорию товара, для которого создается или редактируется атрибут
+            product_id = request.resolver_match.kwargs.get('object_id')
+            if product_id:
+                product = Product.objects.get(pk=product_id)
+                product_category = product.category
+                # Фильтруем характеристики по категории товара
+                kwargs["queryset"] = Attribute.objects.filter(category=product_category)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class ProductAdmin(admin.ModelAdmin):
+    inlines = [ProductAttributeInline]
+    """
+       Метод get_formsets_with_inlines определяет какие формы и inline-формы будут отображаться 
+       на странице изменения объекта в административной панели Django. 
+       Переопределяем метод, чтоб инлайн-форма отображалась если редактируем объект.
+       При создании объекта форма не будет отображаться
+       """
+
+    def get_formsets_with_inlines(self, request, obj=None):
+        if obj:
+            return super().get_formsets_with_inlines(request, obj)
+        return []
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    inlines = [AttributesInLine]
+
+
+admin.site.register(Product, ProductAdmin)
+admin.site.register(Category, CategoryAdmin)
+
+
+@admin.register(Attribute)
+class AttributeAdmin(admin.ModelAdmin):
+    list_display = ['category', 'name', 'unit']
+    list_editable = ['name', 'unit']
+    list_filter = ['category', ]
+    fieldsets = [
+        ('Категория', {
+            'fields': ('category',)
+        }),
+        ('Характеристика', {
+            'fields': ('name', 'unit')
+        }),
+    ]
+
+    form = CustomAttributeAdminForm

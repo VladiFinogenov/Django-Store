@@ -116,7 +116,7 @@ DATABASES = {
 
 # CACHES = {
 #     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+#         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
 #         'LOCATION': '127.0.0.1:11211',
 #     }
 # }
@@ -154,7 +154,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -170,6 +170,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
+LOGIN_REDIRECT_URL = '/'
+
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -182,3 +184,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DEFAULT_CACHE_TIME = 24 * 60 * 60
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# VIEWED_SESSION_ID = 'recently_viewed'
+
+SESSION_SAVE_EVERY_REQUEST = True
