@@ -23,21 +23,22 @@
                             <div class="row">
                                 <div class="row-block">
                                     <div class="form-group">
-                                        {{ form }}
+                                        {{ form.as_p }}
                                     </div>
                                 </div>
                                 {% if not request.user.is_authenticated %}
                                     <div class="row-block">
                                         <div class="form-group">
-                                            {{ password_form }}
+                                            {{ password_form.as_p }}
                                         </div>
-                                        <div><a class="btn btn_muted Order-btnReg" href="{% url 'accounts:login' %}">Я уже зарегистрирован</a>
+                                        <div class="form-group">
+                                            <a class="btn btn_muted Order-btnReg" href="{% url 'accounts:login' %}">Я уже зарегистрирован</a>
                                         </div>
                                     </div>
                                 {% endif %}
                             </div>
                             <div class="Order-footer">
-                                <button class="btn btn_success">Дальше</button>
+                                <button class="btn btn_success" type="submit">Дальше</button>
                             </div>
                         </div>
                     </form>

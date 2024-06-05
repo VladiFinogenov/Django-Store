@@ -1,12 +1,20 @@
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
 from django.views.generic import FormView
-from .forms import UserDataForm, PasswordForm
+from django.urls import reverse, reverse_lazy
+from accounts.models import User
+from .forms import (
+    UserDataForm,
+    PasswordForm,
+    SelectDeliveryForm,
+    SelectPaymentForm
+)
 
 
 class Step1UserData(FormView):
     template_name = 'orders/step1-user-data.html'
     form_class = UserDataForm
-    success_url = 'orders:delivery'
+    # success_url = 'orders:delivery'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -19,72 +27,61 @@ class Step1UserData(FormView):
         kwargs = super().get_form_kwargs()
         if self.request.user.is_authenticated:
             kwargs['initial'] = {
-                'first_name': self.request.user.first_name,
+                'full_name': self.request.user.first_name,
                 'phone': self.request.user.phone,
                 'email': self.request.user.email,
             }
         return kwargs
 
     def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+        if self.request.user.is_authenticated:
+            success_url = reverse('orders:delivery')
+            return redirect(success_url)
+        else:
+            password = form.cleaned_data.get('password2')
+            email = form.cleaned_data.get('email')
+            full_name = form.cleaned_data.get('full_name')
+            phone = form.cleaned_data.get('phone')
+
+            # Создание нового пользователя с введенным данными из формы.
+            user = User.objects.create_user(
+                first_name=full_name,
+                email=email,
+                password=password,
+                phone=phone
+            )
+            login(self.request, user)
+            success_url = reverse('orders:delivery')
+            return redirect(success_url)
 
 
 class Step2SelectDelivery(FormView):
     template_name = 'orders/step2-select-delivery.html'
-    success_url = 'orders:payment'
+    form_class = SelectDeliveryForm
+    success_url = reverse_lazy('orders:payment')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_step'] = 'step2'
         return context
 
+    def form_valid(self, form):
+        return super().form_valid(form)
+
 
 class Step3SelectPayment(FormView):
     template_name = 'orders/step3-select-payment.html'
-    success_url = 'orders:delivery'
+    form_class = SelectPaymentForm
+    success_url = 'orders:confirmation'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_step'] = 'step3'
+        return context
+
+    def form_valid(self, form):
+        return super().form_valid(form)
 
 
 class Step4OrderConfirmation(FormView):
     pass
-    #
-    # class Stage1UserData(LoginRequiredMixin, FormView):
-    #     template_name = 'stage1_user_data.html'
-    #     form_class = Stage1UserDataForm
-    #     success_url = '/next-step/'
-    #
-
-    #
-    #     def get_context_data(self, **kwargs):
-    #         context = super().get_context_data(**kwargs)
-    #         if not self.request.user.is_authenticated:
-    #             context['password_form'] = PasswordForm()
-    #         return context
-    #
-    #     def form_valid(self, form):
-    #         # save the form data
-    #         form.save()
-    #         return super().form_valid(form)
-    #
-    # И
-    # соответствующие
-    # формы:
-    #
-    # from django import forms
-    # from django.contrib.auth.models import User
-    #
-    # class Stage1UserDataForm(forms.ModelForm):
-    #     class Meta:
-    #         model = User
-    #         fields = ['first_name', 'last_name', 'email']
-    #
-    #     phone = forms.CharField(max_length=20)
-    #
-    #     def save(self, commit=True):
-    #         user = super().save(commit=False)
-    #         user.profile.phone = self.cleaned_data['phone']
-    #         if commit:
-    #             user.save()
-    #             user.profile.save()
-    #         return user
-
