@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'banners.apps.BannersConfig',
     'accounts.apps.AccountsConfig',
     'shop.apps.ProductsConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
