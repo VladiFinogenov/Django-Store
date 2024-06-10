@@ -1,6 +1,10 @@
-from django.conf import settings
 from django.urls import path
-from .views import Step1UserData, Step2SelectDelivery, Step3SelectPayment, Step4OrderConfirmation
+from .views import (
+    Step1UserData,
+    Step2SelectDelivery,
+    Step3SelectPayment,
+    Step4OrderConfirmation
+)
 
 app_name = "orders"
 

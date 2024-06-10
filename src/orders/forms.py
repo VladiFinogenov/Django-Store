@@ -16,6 +16,21 @@ class UserDataForm(forms.Form):
         widget=forms.EmailInput(attrs={'class': 'form-input'})
     )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        full_name = cleaned_data.get('full_name')
+
+        if full_name:
+            names = full_name.split()
+            if len(names) == 3:
+                cleaned_data['last_name'] = names[0]
+                cleaned_data['username'] = names[1]
+                cleaned_data['middle_name'] = names[2]
+            else:
+                raise forms.ValidationError("Пожалуйста, введите Фамилию, Имя и Отчество через пробел.")
+
+        return cleaned_data
+
 
 class PasswordForm(forms.Form):
     password1 = forms.CharField(
@@ -42,9 +57,12 @@ class SelectDeliveryForm(forms.Form):
         ('express', 'Экспресс доставка'),
     ]
 
-    delivery_option = forms.ChoiceField(choices=DELIVERY_CHOICES, widget=forms.RadioSelect())
+    delivery_method = forms.ChoiceField(choices=DELIVERY_CHOICES, widget=forms.RadioSelect())
     city = forms.CharField(label='Город', max_length=100)
     address = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-textarea'}))
+
+    def get_delivery_option_display(self):
+        return dict(self.DELIVERY_CHOICES)[self.cleaned_data['delivery_option']]
 
 
 class SelectPaymentForm(forms.Form):

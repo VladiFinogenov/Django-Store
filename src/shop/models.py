@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from taggit.managers import TaggableManager
+from django.db.models import Sum, F, DecimalField
 
 
 def product_preview_directory_path(instance: "Product", filename: str) -> str:
@@ -253,3 +254,55 @@ class SellerProduct(models.Model):
 
     def __str__(self):
         return self.product.name
+
+
+class Cart(models.Model):
+    """
+    Модель Cart представляет корзину, в которую можно добавлять товары.
+    """
+    user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Cart number {self.id} -- User: {self.user.email} -- Total price: {self.total_price()}"
+
+    def total_price(self):
+        total = self.cart_items.aggregate(
+            total=Sum(F('price') * F('quantity'), output_field=DecimalField())
+        )['total'] or 0
+        return total
+
+    def add_product(self, product, quantity=1):
+        cart_item, created = CartItem.objects.get_or_create(product=product, cart=self)
+        if created:
+            cart_item.quantity = quantity
+            cart_item.price = product.price
+        else:
+            cart_item.quantity += quantity
+        cart_item.save()
+
+    def delete_product(self, cart_item):
+        cart_item.delete()
+
+    def update_product(self, cart_item, quantity):
+        if quantity > 0:
+            cart_item.quantity = quantity
+            cart_item.save()
+        else:
+            self.delete_product(cart_item)
+
+    def total_quantity(self):
+        return self.cart_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+
+
+class CartItem(models.Model):
+    """
+    Модель CartItem связана непосредственно с самой корзиной, описанной выше,
+    данная модель обозначает кол-во, сам товар, цену.
+    """
+    product = models.ForeignKey('SellerProduct', on_delete=models.CASCADE, related_name='cart_items')
+    cart = models.ForeignKey('Cart', on_delete=models.CASCADE, related_name='cart_items')
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"id: {self.id}. Name: {self.product.product.name} -- Cart# {self.cart.id} -- Quantity: {self.quantity} -- Price: {self.price}"

@@ -9,15 +9,17 @@
         <div class="Section Section_column Section_columnRight Section_columnWide Order">
             <div class="wrap">
 
+                {% include 'orders/order-navigation.html' %}
+
                 <div class="Section-content">
 
-                    <form class="form" action="{% url 'orders:delivery' %}" method="post">
-                        <div class="Order-block" id="step4">
+                    <form class="form" action="{% url 'orders:confirmation' %}" method="post">
+                        {% csrf_token %}
+                        <div class="Order-block Order-block_OPEN">
                             <header class="Section-header Section-header_sm">
                                 <h2 class="Section-title">Шаг 4. Подтверждение заказа
                                 </h2>
                             </header>
-                            <!--+div.Order.-confirmation-->
                             <div class="Order-infoBlock">
                                 <div class="Order-personal">
                                     <div class="row">
@@ -25,19 +27,19 @@
                                             <div class="Order-info">
                                                 <div class="Order-infoType">ФИО:
                                                 </div>
-                                                <div class="Order-infoContent">Иванов Иван Иванович
+                                                <div class="Order-infoContent">{{ user.get_full_name }}
                                                 </div>
                                             </div>
                                             <div class="Order-info">
                                                 <div class="Order-infoType">Телефон:
                                                 </div>
-                                                <div class="Order-infoContent">+7000000000
+                                                <div class="Order-infoContent">{{ user.phone }}
                                                 </div>
                                             </div>
                                             <div class="Order-info">
                                                 <div class="Order-infoType">E-mail:
                                                 </div>
-                                                <div class="Order-infoContent">send@test.test
+                                                <div class="Order-infoContent">{{ user.email }}
                                                 </div>
                                             </div>
                                         </div>
@@ -45,25 +47,25 @@
                                             <div class="Order-info Order-info_delivery">
                                                 <div class="Order-infoType">Тип доставки:
                                                 </div>
-                                                <div class="Order-infoContent">Обычная доставка
+                                                <div class="Order-infoContent">{{ order.get_delivery_method_display }}
                                                 </div>
                                             </div>
                                             <div class="Order-info">
                                                 <div class="Order-infoType">Город:
                                                 </div>
-                                                <div class="Order-infoContent">Москва
+                                                <div class="Order-infoContent">{{ order.city }}
                                                 </div>
                                             </div>
                                             <div class="Order-info">
                                                 <div class="Order-infoType">Адрес:
                                                 </div>
-                                                <div class="Order-infoContent">Ул. Академика Арцимовича, д. 10, кв. 10
+                                                <div class="Order-infoContent">{{ order.address }}
                                                 </div>
                                             </div>
                                             <div class="Order-info Order-info_pay">
                                                 <div class="Order-infoType">Оплата:
                                                 </div>
-                                                <div class="Order-infoContent">Онлайн картой
+                                                <div class="Order-infoContent">{{ order.get_payment_method_display }}
                                                 </div>
                                             </div>
                                         </div>
