@@ -64,7 +64,7 @@
                                     <button class="btn btn_primary" type="submit">
                                         <img class="btn-icon" src="{% static 'assets/img/icons/card/cart_white.svg' %}" alt="cart_white.svg"/>
                                         <span class="btn-content">Купить</span>
-                                    </a>
+                                    </button>
                                     {% with product.pk as pk %}
                                         <form method="POST" action="{% url 'comparison:service_add' pk %}">
                                             {% csrf_token %}
@@ -131,8 +131,8 @@
                                     </strong><span> 2–3 jours</span>
                                 </div>
                             </div>
-                            {% include 'includes/reviews.html' %}
                         </div>
+                        {% include 'includes/reviews.html' %}
                     </div>
                 </div>
             </div>

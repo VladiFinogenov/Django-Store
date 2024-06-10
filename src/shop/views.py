@@ -50,8 +50,6 @@ from shop.models import (
 from shop.forms import ReviewForm
 
 
-
-
 @never_cache
 def history_view(request: HttpRequest, limit=5) -> HttpResponse:
     """
@@ -86,7 +84,7 @@ def update_history_product(request, product_id):
             product.save()
 
 
-class ProductDetailView(DetailView):
+class ProductDetailView(NonCachingMixin, DetailView):
     template_name = 'shop/product.html'
     context_object_name = "product"
     model = Product
@@ -144,6 +142,13 @@ class ProductDetailView(DetailView):
             context['average_price'] = Decimal(0)
             context['min_price_id'] = min_price_id
         context['product_min_price_id'] = seller_products_qs
+
+        items_per_page = 3
+        page_number = self.request.GET.get('page')
+        paginator = Paginator(self.object.reviews.all(), items_per_page)
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['form'] = ReviewForm()
         return context
 
 # class ProductDetailView(NonCachingMixin, DetailView):

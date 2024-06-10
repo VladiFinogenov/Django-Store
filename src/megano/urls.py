@@ -24,7 +24,8 @@ urlpatterns = [
     path("", include("shop.urls")),
     path('', include('accounts.urls')),
     path("banners/", include('banners.urls')),
-    path("orders/", include('orders.urls'))
+    path("orders/", include('orders.urls')),
+    path("comparison/", include("comparison.urls", namespace="comparison")),
 ]
 
 if settings.DEBUG:
