@@ -6501,6 +6501,6 @@ input[type="submit"] {
     right: 0;
 }
 
-.menu-item.active .menu-link {
-  color: blue;
+.menu-item.active .menu-link.active {
+  color: red;
 }
