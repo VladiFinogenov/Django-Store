@@ -30,6 +30,7 @@ class Order(models.Model):
     city = models.CharField(max_length=100, null=True)
     address = models.CharField(max_length=255, null=True)
     delivery_method = models.CharField(max_length=50, choices=DELIVERY_CHOICES, default='regular')
+    comment = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Order #{self.pk}"

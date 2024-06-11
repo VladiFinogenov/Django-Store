@@ -58,8 +58,12 @@ class SelectDeliveryForm(forms.Form):
     ]
 
     delivery_method = forms.ChoiceField(choices=DELIVERY_CHOICES, widget=forms.RadioSelect())
-    city = forms.CharField(label='Город', max_length=100)
+    city = forms.CharField(max_length=100)
     address = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-textarea'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['delivery_method'].label = False
 
     def get_delivery_option_display(self):
         return dict(self.DELIVERY_CHOICES)[self.cleaned_data['delivery_option']]
@@ -75,3 +79,11 @@ class SelectPaymentForm(forms.Form):
         choices=PAYMENT_METHOD_CHOICES,
         widget=forms.RadioSelect()
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['payment_method'].label = False
+
+
+class CommentOrderForm(forms.Form):
+    comment = forms.CharField(max_length=255, required=False)

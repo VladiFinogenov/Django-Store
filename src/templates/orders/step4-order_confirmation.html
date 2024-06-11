@@ -47,7 +47,7 @@
                                             <div class="Order-info Order-info_delivery">
                                                 <div class="Order-infoType">Тип доставки:
                                                 </div>
-                                                <div class="Order-infoContent">{{ order.get_delivery_method_display }}
+                                                <div class="Order-infoContent">{{ order.delivery_method }}{{ order.get_delivery_method_display }}
                                                 </div>
                                             </div>
                                             <div class="Order-info">
@@ -65,15 +65,26 @@
                                             <div class="Order-info Order-info_pay">
                                                 <div class="Order-infoType">Оплата:
                                                 </div>
-                                                <div class="Order-infoContent">{{ order.get_payment_method_display }}
+                                                <div class="Order-infoContent">{{ order.payment_method }}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="Cart-block">
-                                    <button class="btn btn_primary btn_lg" type="submit">Оплатить
-                                    </button>
+                                <div class="Cart Cart_order">
+                                    <div class="Cart-total">
+                                        <div class="Cart-block Cart-block_total">
+                                            <strong class="Cart-title">Итого:
+                                            </strong><span class="Cart-price">200.99$</span>
+                                        </div>
+                                        <div class="Cart-block">
+                                            <button class="btn btn_primary btn_lg" type="submit">Оплатить
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {{ form }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
