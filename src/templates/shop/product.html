@@ -49,7 +49,7 @@
                             </ul>
                         </div>
                         <div class="ProductCard-cart">
-                            <form action="{% url 'shop:add_to_cart' min_price_id %}" method="post">
+                            <form action="{% url 'shop:add_to_cart' min_price_id %}" method="post">{{min_price_id}}
                                 {% csrf_token %}
                                 <div class="ProductCard-cartElement ProductCard-cartElement_amount">
                                     <div class="Amount Amount_product">

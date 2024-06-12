@@ -119,7 +119,9 @@ class ProductDetailView(NonCachingMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product_id = self.kwargs.get('pk')
+        print('product_id', product_id)
         context['seller_products'] = seller_products_qs = self.get_seller_products(product_id)
+        print('seller_products_qs', seller_products_qs)
         price = 0
         count = 0
         min_price = 0
@@ -263,7 +265,7 @@ class AddToCartView(View):
             return HttpResponseBadRequest("Количество должно быть числом.")
         quantity = int(quantity)
         if quantity <= 0:
-            return HttpResponseBadRequest("Количество должно быть болььше нуля.")
+            return HttpResponseBadRequest("Количество должно быть больше нуля.")
 
         if request.user.is_authenticated:
             cart, created = Cart.objects.get_or_create(user=request.user)
