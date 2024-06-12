@@ -8,7 +8,6 @@ from .views import (
 
 app_name = "orders"
 
-
 urlpatterns = [
     path("create/", Step1UserData.as_view(), name='order_create'),
     path("select/delivery/", Step2SelectDelivery.as_view(), name='select_delivery'),

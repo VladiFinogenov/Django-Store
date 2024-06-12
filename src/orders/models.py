@@ -43,17 +43,3 @@ class Order(models.Model):
         self.order_status = 'Cancelled'
         self.save()
 
-
-class Delivery(models.Model):
-
-    DELIVERY_CHOICES = [
-        ('regular', 'Обычная доставка'),
-        ('express', 'Экспресс доставка'),
-    ]
-
-    order = models.ForeignKey('Order', on_delete=models.CASCADE)
-    express_price = models.DecimalField(max_digits=8, decimal_places=2)
-    min_order_amount = models.DecimalField(max_digits=8, decimal_places=2)
-    city = models.CharField(max_length=100)
-    address = models.CharField(max_length=255)
-    delivery_choices = models.CharField(max_length=50, choices=DELIVERY_CHOICES, default='regular')

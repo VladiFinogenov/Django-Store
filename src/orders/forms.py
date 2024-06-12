@@ -65,14 +65,11 @@ class SelectDeliveryForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['delivery_method'].label = False
 
-    def get_delivery_option_display(self):
-        return dict(self.DELIVERY_CHOICES)[self.cleaned_data['delivery_option']]
-
 
 class SelectPaymentForm(forms.Form):
     PAYMENT_METHOD_CHOICES = [
         ('card', 'Онлайн картой'),
-        ('account', 'Онлайн со случайного чужого счета'),
+        ('account', 'Онлайн со счета'),
     ]
 
     payment_method = forms.ChoiceField(
