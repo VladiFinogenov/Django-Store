@@ -1,6 +1,5 @@
 from django.db import models
 from megano import settings
-from shop.models import SellerProduct, CartItem
 
 
 PAYMENT_METHOD_CHOICES = [
@@ -22,7 +21,8 @@ class Order(models.Model):
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    seller_product = models.ForeignKey(CartItem, on_delete=models.CASCADE, null=True)
+    # seller_product = models.ForeignKey(CartItem, on_delete=models.CASCADE, null=True)
+    # items = models.ManyToManyField(CartItem, related_name='orders', blank=True)
     order_status = models.CharField(max_length=50, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     promocode = models.CharField(max_length=50, null=True, blank=True)
@@ -42,4 +42,3 @@ class Order(models.Model):
     def cancel_order(self):
         self.order_status = 'Cancelled'
         self.save()
-

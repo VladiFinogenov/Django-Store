@@ -1,24 +1,18 @@
+import random
 from django.contrib import messages
 from django.core.cache import cache
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import cache_page, cache_control
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import DetailView, CreateView, View, ListView
-from django.urls import reverse
-from django.utils.safestring import mark_safe
 from django.views.decorators.vary import vary_on_headers, vary_on_cookie
 from shop.models import Product, Review, SellerProduct, HistoryProduct
 from shop.forms import ReviewForm
 from django.core.cache.utils import make_template_fragment_key
 from django.views.decorators.cache import never_cache
-
 from django.contrib.sessions.backends import db
-import random
 from django.db.models import Prefetch
 from django.utils import timezone
-
 from shop.mixins import NonCachingMixin
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -76,12 +70,11 @@ def update_history_product(request, product_id):
     """
 
     if request.user.is_authenticated:
-
-        product, created = HistoryProduct.objects.get_or_create(user=request.user, product=product_id)
-
+        product = get_object_or_404(Product, pk=product_id)
+        history_product, created = HistoryProduct.objects.get_or_create(user=request.user, product=product)
         if not created:
-            product.created_at = timezone.now()
-            product.save()
+            history_product.created_at = timezone.now()
+        history_product.save()
 
 
 class ProductDetailView(NonCachingMixin, DetailView):
@@ -93,6 +86,8 @@ class ProductDetailView(NonCachingMixin, DetailView):
         product_id = self.kwargs.get("pk")
         product_cache_key = f'product_cache_key:{product_id}'
         product_data = cache.get(product_cache_key)
+
+        update_history_product(self.request, product_id)
 
         if product_data is None:
             product = get_object_or_404(Product, pk=product_id)
@@ -119,9 +114,7 @@ class ProductDetailView(NonCachingMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product_id = self.kwargs.get('pk')
-        print('product_id', product_id)
         context['seller_products'] = seller_products_qs = self.get_seller_products(product_id)
-        print('seller_products_qs', seller_products_qs)
         price = 0
         count = 0
         min_price = 0
