@@ -8,6 +8,7 @@ from django.views.generic import FormView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from orders.models import Order
+from shop.models import CartItem, Cart
 from accounts.models import User
 from orders.forms import (
     UserDataForm,
@@ -46,8 +47,9 @@ class Step1UserData(FormView):
                 'full_name': user.get_full_name,
                 'phone': user.phone,
                 'email': user.email,
-            }
 
+            }
+        kwargs['user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
@@ -147,13 +149,19 @@ class Step4OrderConfirmation(FormView):
 
     template_name = 'orders/step4-order_confirmation.html'
     form_class = CommentOrderForm
-    # success_url = reverse_lazy('orders:confirmation')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = User.objects.get(pk=self.request.user.pk)
+
+        # Получаем корзину пользователя
+        cart = Cart.objects.get(user=user)
+        cart_items = CartItem.objects.filter(cart=cart)
+        total_price = cart.total_price()
         order_data = cache.get('order_data', {})
         context['order'] = order_data
+        context['cart_items'] = cart_items
+        context['total_price'] = total_price
         context['user'] = user
         context['form_comment'] = CommentOrderForm()
         context['current_step'] = 'step4'
