@@ -33,7 +33,6 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     def form_valid(self, form):
         form_result = super().form_valid(form)
         user = form.get_user()
-        # Вызов функции для обновления статуса пользователя
         user.save()
         return form_result
 
@@ -87,6 +86,9 @@ class ProfileView(UpdateView):
 
 
 class UserHistoryProductView(View):
+    """
+    Представление для отображения списка просмотренных товаров.
+    """
 
     @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
@@ -100,6 +102,15 @@ class UserHistoryProductView(View):
 
 
 class UserHistoryOrderView(ListView):
+    """
+    Представление для отображения списка заказов пользователя.
+    """
+
     template_name = 'accounts/user-history-order.html'
     model = Order
     context_object_name = 'orders'
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Order.objects.filter(user=user).order_by('-created_at')
+        return queryset

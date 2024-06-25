@@ -5,8 +5,6 @@ from django.contrib.auth import get_user_model
 from taggit.managers import TaggableManager
 from django.db.models import Sum, F, DecimalField
 
-from orders.models import Order
-
 
 def product_preview_directory_path(instance: "Product", filename: str) -> str:
     return "shop/product_{pk}/preview/{filename}".format(

@@ -704,7 +704,7 @@ var Order = function(){
                         .closest('.menu-item')
                         .addClass('menu-item_ACTIVE');
                 }
-                
+
             });
         }
     };

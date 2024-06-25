@@ -31,28 +31,49 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserUpdateForm(forms.ModelForm):
-    """
-    Форма обновления данных пользователя
-    """
-
-    username = forms.CharField(max_length=100)
-    first_name = forms.CharField(max_length=100, required=False)
-    last_name = forms.CharField(max_length=100, required=False)
-    avatar = forms.ImageField()
-    birth_date = forms.DateField(
-        widget=forms.DateInput(
-            format='%d/%m/%Y',
-            attrs={
-                'class': 'form-control',
-                'placeholder': 'Введите дату рождения',
-                'type': 'date'
-            }),
-        required=False
-    )
+    full_name = forms.CharField(label='ФИО', required=False)
+    email = forms.EmailField(label='Email', required=False)
+    phone = forms.CharField(label='Телефон', required=False)
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput, required=False)
+    avatar = forms.ImageField(label='Аватар', required=False)
+    last_name = forms.CharField(widget=forms.HiddenInput(), required=False)
+    username = forms.CharField(widget=forms.HiddenInput(), required=False)
+    middle_name = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = User
-        fields = ('avatar', 'first_name', 'last_name', 'birth_date')
+        fields = ['full_name', 'email', 'phone', 'password', 'avatar', 'last_name', 'username', 'middle_name']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        full_name = cleaned_data.get('full_name')
+
+        if full_name:
+            names = full_name.split()
+            if len(names) == 3:
+                cleaned_data['last_name'] = names[0]
+                cleaned_data['username'] = names[1]
+                cleaned_data['middle_name'] = names[2]
+            else:
+                raise forms.ValidationError("Пожалуйста, введите Фамилию, Имя и Отчество через пробел.")
+
+        return cleaned_data
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar:
+            if avatar.size > 2 * 1024 * 1024:
+                raise forms.ValidationError("Размер аватара не должен превышать 2MB.")
+        return avatar
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user
 
 
 class UserRegisterForm(UserCreationForm):

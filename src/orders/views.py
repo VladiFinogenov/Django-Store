@@ -8,7 +8,7 @@ from django.views.generic import FormView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from orders.models import Order
-from shop.models import CartItem, Cart
+from shop.models import CartItem, Cart, SellerProduct, Product, Seller
 from accounts.models import User
 from orders.forms import (
     UserDataForm,
@@ -180,14 +180,25 @@ class Step4OrderConfirmation(FormView):
         address = order_data.get('address')
         payment_method = order_data.get('payment_method')
         comment = form.cleaned_data['comment']
+
         order, created = Order.objects.get_or_create(
             user=user,
             delivery_method=delivery_method,
             payment_method=payment_method,
             city=city,
             address=address,
-            comment=comment
+            comment=comment,
         )
+
+        # Добавление товаров в заказ
+
+        cart = Cart.objects.get(user=user)
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        for cart_item in cart_items:
+            product = SellerProduct.objects.get(pk=cart_item.product.pk)
+            order.seller_product.add(product)
+            order.save()
 
         if payment_method == 'Онлайн картой':
             return render(self.request, template_name='orders/payment-by-card.html')
