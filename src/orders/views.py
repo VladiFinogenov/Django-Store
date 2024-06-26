@@ -1,14 +1,14 @@
 from django.contrib.auth import login
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.views.generic import FormView
+from django.views.generic import FormView, DetailView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from orders.models import Order
-from shop.models import CartItem, Cart, SellerProduct, Product, Seller
+from shop.models import CartItem, Cart, SellerProduct
 from accounts.models import User
 from orders.forms import (
     UserDataForm,
@@ -207,3 +207,19 @@ class Step4OrderConfirmation(FormView):
         else:
             messages.error(self.request, "Способ оплаты не установлен.")
             return HttpResponseRedirect(reverse('orders:confirmation'))
+
+
+class OrderDetail(DetailView):
+    model = Order
+    template_name = 'orders/oneorder.html'
+    context_object_name = 'order'
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Order.objects.filter(user=user)
+        return queryset
+
+    def get_object(self, queryset=None):
+        order_id = self.kwargs.get('pk')
+        order = get_object_or_404(Order, pk=order_id, user=self.request.user)
+        return order

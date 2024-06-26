@@ -22,8 +22,7 @@ class Order(models.Model):
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    seller_product = models.ManyToManyField(SellerProduct, null=True)
-
+    seller_product = models.ManyToManyField(SellerProduct)
     order_status = models.CharField(max_length=50, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     promocode = models.CharField(max_length=50, null=True, blank=True)

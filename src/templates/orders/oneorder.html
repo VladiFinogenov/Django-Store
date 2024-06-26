@@ -9,7 +9,7 @@
         <div class="Middle-top">
             <div class="wrap">
                 <div class="Middle-header">
-                    <h1 class="Middle-title">Заказ №200
+                    <h1 class="Middle-title">Заказ №{{ order.id }}
                     </h1>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                                         <div class="Order-info Order-info_date">
                                             <div class="Order-infoType">Дата заказа:
                                             </div>
-                                            <div class="Order-infoContent">21.07.20
+                                            <div class="Order-infoContent">{{ order.created_at }}
                                             </div>
                                         </div>
                                         <div class="Order-info">
@@ -39,13 +39,13 @@
                                         <div class="Order-info">
                                             <div class="Order-infoType">Телефон:
                                             </div>
-                                            <div class="Order-infoContent">+7000000000
+                                            <div class="Order-infoContent">{{ order.user.phone }}
                                             </div>
                                         </div>
                                         <div class="Order-info">
                                             <div class="Order-infoType">E-mail:
                                             </div>
-                                            <div class="Order-infoContent">send@test.test
+                                            <div class="Order-infoContent">{{ order.user.email }}
                                             </div>
                                         </div>
                                     </div>
@@ -53,31 +53,31 @@
                                         <div class="Order-info Order-info_delivery">
                                             <div class="Order-infoType">Тип доставки:
                                             </div>
-                                            <div class="Order-infoContent">Обычная доставка
+                                            <div class="Order-infoContent">{{ order.id }}
                                             </div>
                                         </div>
                                         <div class="Order-info">
                                             <div class="Order-infoType">Город:
                                             </div>
-                                            <div class="Order-infoContent">Москва
+                                            <div class="Order-infoContent">{{ order.city }}
                                             </div>
                                         </div>
                                         <div class="Order-info">
                                             <div class="Order-infoType">Адрес:
                                             </div>
-                                            <div class="Order-infoContent">Ул. Академика Арцимовича, д. 10, кв. 10
+                                            <div class="Order-infoContent">{{ order.address }}
                                             </div>
                                         </div>
                                         <div class="Order-info Order-info_pay">
                                             <div class="Order-infoType">Оплата:
                                             </div>
-                                            <div class="Order-infoContent">Онлайн картой
+                                            <div class="Order-infoContent">{{ order.payment_method }}
                                             </div>
                                         </div>
                                         <div class="Order-info Order-info_status">
                                             <div class="Order-infoType">Статус:
                                             </div>
-                                            <div class="Order-infoContent">Не оплачен
+                                            <div class="Order-infoContent">{{ order.order_status }}
                                             </div>
                                         </div>
                                         <div class="Order-info Order-info_error">

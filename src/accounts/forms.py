@@ -42,7 +42,7 @@ class UserUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['full_name', 'email', 'phone', 'password', 'avatar', 'last_name', 'username', 'middle_name']
+        fields = ['email', 'phone', 'password', 'avatar', 'last_name', 'username', 'middle_name']
 
     def clean(self):
         cleaned_data = super().clean()
