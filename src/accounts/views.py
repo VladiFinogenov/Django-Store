@@ -5,12 +5,11 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import UpdateView, DetailView, CreateView, ListView
+from django.views.generic import UpdateView, DetailView, CreateView, ListView, View
 from orders.models import Order
 from .models import User
 from shop.models import HistoryProduct
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import View
 from django_registration.backends.activation.views import RegistrationView
 from .forms import UserRegisterForm, UserUpdateForm
 
@@ -73,7 +72,7 @@ class PersonalAccountView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        order = Order.objects.filter(user=user).order_by('-created_at').first
+        order = Order.objects.filter(user=user).order_by('-created_at').first()
         context['order'] = order
         return context
 

@@ -59,7 +59,7 @@
                                     <div class="form-group">
                                         <label class="form-label" for="phone">Телефон
                                         </label>
-                                        <input class="form-input" id="phone" name="phone" type="text" value="+70000000000" action="{% url 'accounts:profile' pk=user.id %}">
+                                        <input class="form-input" id="phone" name="phone" type="text" value="{{ user.phone }}" action="{% url 'accounts:profile' pk=user.id %}">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="email">E-mail

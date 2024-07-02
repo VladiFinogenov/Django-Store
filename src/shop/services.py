@@ -1,11 +1,12 @@
+from django.core.cache import cache
+from django.conf import settings
+from .models import Category, SellerProduct, Seller, Product
 import logging
 import os
 import datetime
 import json
 import shutil
-from django.core.cache import cache
-from django.conf import settings
-from .models import Category, SellerProduct, Seller, Product
+from django.db.models import Count
 
 
 def setup_logger(name, log_dir, log_file, level=logging.INFO):
@@ -82,7 +83,7 @@ def get_cached_categories():
     cache_key = 'categories'
     categories = cache.get(cache_key)
     if categories is None:
-        categories = Category.objects.filter(products__available=True).prefetch_related('products')
+        categories = Category.objects.filter(products__available=True, parent__isnull=True).distinct()
         cache.set(cache_key, categories, settings.DEFAULT_CACHE_TIME)
     return categories
 
@@ -97,3 +98,28 @@ def get_cached_products():
         cache.set(cache_key, products, settings.DEFAULT_CACHE_TIME)
 
     return products
+
+
+def get_cached_popular_products():
+    cache_key = 'popular_products'
+    popular_products = cache.get(cache_key)
+
+    if popular_products is None:
+        product_sales = SellerProduct.objects.annotate(total_sales=Count('orders'))
+
+        popular_products = sorted(product_sales, key=lambda p: p.total_sales, reverse=True)[:8]
+
+        cache.set(cache_key, popular_products, settings.DEFAULT_CACHE_TIME)
+
+    return popular_products
+
+
+def get_limited_products():
+    cache_key = 'limited_products'
+    limited_products = cache.get(cache_key)
+
+    if limited_products is None:
+        limited_products = SellerProduct.objects.filter(is_limited=True)[:16]
+        cache.set(cache_key, limited_products, settings.DEFAULT_CACHE_TIME)
+
+    return limited_products

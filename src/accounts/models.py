@@ -25,6 +25,8 @@ class User(AbstractUser):
     phone = models.CharField(
         max_length=12,
         unique=True,
+        blank=True,
+        null=True,
         validators=[phone_regex])
     avatar = models.ImageField(null=True, blank=True, upload_to=user_avatar_directory_path)
     birth_date = models.DateField(null=True, blank=True)

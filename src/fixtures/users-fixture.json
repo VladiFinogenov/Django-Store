@@ -1,0 +1,83 @@
+[
+    {
+        "model": "accounts.user",
+        "pk": 2,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff150",
+            "username": "Иванов",
+            "last_name": "Иван",
+            "middle_name": "Иванович",
+            "email": "user1@example.com",
+            "phone": "89999999999",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": false
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 3,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff151",
+            "username": "seller1",
+            "email": "seller1@example.com",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": true
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 4,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff152",
+            "username": "seller2",
+            "email": "seller2@example.com",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": true
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 5,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff153",
+            "username": "seller3",
+            "email": "seller3@example.com",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": true
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 6,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff154",
+            "username": "seller4",
+            "email": "seller4@example.com",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": true
+        }
+    },
+    {
+        "model": "accounts.user",
+        "pk": 7,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff155",
+            "username": "seller5",
+            "email": "seller5@example.com",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "is_seller": true
+        }
+    }
+]

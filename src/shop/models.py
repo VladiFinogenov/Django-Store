@@ -69,7 +69,7 @@ class Category(models.Model):
         blank=True
     )
     icon = models.ImageField(
-        upload_to='category_icons/',
+        upload_to='assets/img/icons/departments/',
         blank=True,
         null=True
     )

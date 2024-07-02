@@ -99,14 +99,14 @@
                             </a>
                             <div class="Card-content">
                                 <strong class="Card-title">
-                                    <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                                    <a href="{{ product.get_absolute_url }}">{{ product.product.name }}</a>
                                 </strong>
                                 <div class="Card-description">
                                     <div class="Card-cost">
                                         <span class="Card-price">${{ product.price }}</span>
                                     </div>
                                     <div class="Card-category">
-                                        {{ product.category.name }}
+                                        {{ product.product.tag }}
                                     </div>
                                     <div class="Card-hover">
                                         <a class="Card-btn" href="#">
@@ -118,9 +118,7 @@
                         </div>
                         {% endfor %}
                     </div>
-
-                    {% include "includes/pagination.html" %}
-
+                    {% include "includes/pagination_for_catalog.html" %}
                 </div>
             </div>
         </div>

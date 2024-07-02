@@ -1,28 +1,17 @@
-import random
-from django.contrib import messages
-from django.core.cache import cache
-from django.http import HttpRequest, HttpResponse
-from django.template.response import TemplateResponse
-from django.views.decorators.cache import cache_page, cache_control
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views.decorators.vary import vary_on_headers, vary_on_cookie
-from shop.models import Product, Review, SellerProduct, HistoryProduct
-from shop.forms import ReviewForm
-from django.core.cache.utils import make_template_fragment_key
-from django.views.decorators.cache import never_cache
-from django.contrib.sessions.backends import db
-from django.db.models import Prefetch
-from django.utils import timezone
-from shop.mixins import NonCachingMixin
+from random import choice
+
+from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.cache import cache
 from django.core.serializers import serialize, deserialize
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import DetailView, CreateView, DeleteView, ListView, View, UpdateView
+from django.views.generic import DetailView, CreateView, DeleteView, ListView, View, UpdateView, TemplateView
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.http import HttpRequest, HttpResponseRedirect, HttpResponseBadRequest
+from django.urls import reverse_lazy
 from decimal import Decimal, InvalidOperation
 from shop.utils import (
     add_to_session_cart,
@@ -40,54 +29,49 @@ from shop.models import (
     SellerProduct,
     Cart,
     CartItem,
+    Category,
+    HistoryProduct,
 )
 from shop.forms import ReviewForm
+from django.db.models import Count
+from shop.services import get_cached_popular_products, get_limited_products
+from .services import get_cached_products, get_cached_categories
 
 
-@never_cache
-def history_view(request: HttpRequest, limit=5) -> HttpResponse:
-    """
-    Представление для отображения истории просмотра товаров.
-    """
+class IndexView(TemplateView):
+    template_name = 'shop/index.html'
 
-    history_products = (
-        HistoryProduct.history.all()[:limit]
-    )
-
-    return render(request, 'includes/history-product.html', {
-        'recently_viewed_products': history_products
-    })
-
-
-def update_history_product(request, product_id):
-    """
-    Функция update_recently_viewed реализует логику добавление товара в список просмотренных.
-
-    При добавлении нового товара, если этот товар есть в списке просмотренных,
-    он со своего места перемещается в самое начало списка. То есть в этом списке
-    не может быть двух одинаковых товаров. Если этот товар и есть уже на последнем месте,
-    то ничего не происходит.
-    """
-
-    if request.user.is_authenticated:
-        product = get_object_or_404(Product, pk=product_id)
-        history_product, created = HistoryProduct.objects.get_or_create(user=request.user, product=product)
-        if not created:
-            history_product.created_at = timezone.now()
-        history_product.save()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        popular_categories = Category.objects.annotate(product_count=Count('products')).order_by('-product_count')[:3]
+        limited_products = get_limited_products()
+        context['categories'] = popular_categories
+        context['product'] = choice(limited_products) if len(limited_products) > 0 else None
+        context['seller_products'] = get_cached_popular_products()
+        context['limited_products'] = limited_products
+        return context
 
 
-class ProductDetailView(NonCachingMixin, DetailView):
+class ProductDetailView(DetailView):
     template_name = 'shop/product.html'
     context_object_name = "product"
     model = Product
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            product, created = HistoryProduct.objects.get_or_create(user=request.user, product=self.get_object())
+
+            if not created:
+                product.created_at = datetime.now()
+                product.save()
+        return super().get(request, *args, **kwargs)
+
+    # def get(self, request, *args, **kwargs):
 
     def get_object(self, queryset=None):
         product_id = self.kwargs.get("pk")
         product_cache_key = f'product_cache_key:{product_id}'
         product_data = cache.get(product_cache_key)
-
-        update_history_product(self.request, product_id)
 
         if product_data is None:
             product = get_object_or_404(Product, pk=product_id)
@@ -146,77 +130,58 @@ class ProductDetailView(NonCachingMixin, DetailView):
         context['form'] = ReviewForm()
         return context
 
-# class ProductDetailView(NonCachingMixin, DetailView):
-#
-#     template_name = 'shop/product.html'
-#     context_object_name = "product"
-#     model = Product
-#
-#     def get_context_data(self, **kwargs):
-#         context = super(ProductDetailView, self).get_context_data(**kwargs)
-#         product_cache_key = f'product_{self.kwargs.get("pk")}'
-#         product = cache.get(product_cache_key)
-#
-#         if product is None:
-#             prefetch_reviews = Prefetch(
-#                 lookup='reviews',
-#                 queryset=Review.objects.select_related('author').all()
-#             )
-#
-#             prefetch_sellers = Prefetch(
-#                 lookup='seller_products',
-#                 queryset=SellerProduct.objects.select_related('seller').all()
-#             )
-#
-#             product = (Product.objects
-#                        .prefetch_related(prefetch_reviews, prefetch_sellers, 'category')
-#                        .get(pk=self.kwargs.get('pk')))
-#
-#             cache.set(product_cache_key, product, timeout=60 * 60 * 24)
-#             update_history_product(self.request, product.id)
-#
-#         items_per_page = 3
-#         page_number = self.request.GET.get('page')
-#         paginator = Paginator(product.reviews.all(), items_per_page)
-#         page_obj = paginator.get_page(page_number)
-#
-#         context['seller_products'] = product.seller_products.all()
-#         context['page_obj'] = page_obj
-#         context['form'] = ReviewForm()
-#
-#         return context
 
-
-class ReviewCreateView(CreateView):
+class ReviewCreateView(PermissionRequiredMixin, CreateView):
     """
     Представление: для создания отзыва к продукту.
     """
 
     model = Review
     form_class = ReviewForm
+    permission_required = 'auth.is_authenticated'
 
     def form_valid(self, form):
-        cache.delete('product_cache_key')
         review = form.save(commit=False)
         review.product_id = self.kwargs.get('pk')
         review.author = self.request.user
         review.save()
-
         return redirect(review.product.get_absolute_url())
 
-    # @cache_page(0)
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            #login_url = reverse('login')
-            message = f"<p>Необходимо авторизоваться для добавления комментариев</p>"\
-                      "<a href='{login_url}'>авторизоваться</a>"
-            messages.info(request, mark_safe(message))
-            return redirect(reverse(
-                viewname='shop:product_detail',
-                kwargs={'pk': self.kwargs.get('pk')}
-            ))
+    def handle_no_permission(self):
+        login_url = reverse('login')
+        message = mark_safe(
+            f"<p>Необходимо авторизоваться для добавления комментариев</p>"
+            f"<a href='{login_url}'>авторизоваться</a>"
+        )
+        messages.info(self.request, message)
+        return redirect(reverse(
+            viewname='shop:product_detail',
+            kwargs={'pk': self.kwargs.get('pk')}
+        ))
+
+
+class AddToCartView(View):
+    """
+    Представление: добавление товара в корзину
+    """
+
+    def post(self, request, *args, **kwargs):
+        product_id = kwargs.get('pk')
+        product = get_object_or_404(SellerProduct, id=product_id)
+        quantity = request.POST.get('amount', '1')
+        if not quantity.isdigit():
+            return HttpResponseBadRequest("Количество должно быть числом.")
+        quantity = int(quantity)
+        if quantity <= 0:
+            return HttpResponseBadRequest("Количество должно быть болььше нуля.")
+
+        if request.user.is_authenticated:
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            cart.add_product(product, quantity=quantity)
         else:
-            return super(ReviewCreateView, self).dispatch(request, *args, **kwargs)
+            add_to_session_cart(request, product_id, quantity)
+
+        return redirect('shop:product_detail', product.product.id)
 
 
 class CartDetailView(DetailView):
@@ -243,30 +208,6 @@ class CartDetailView(DetailView):
             context['total_price'] = get_total_price_from_session_cart(self.request)
             context['total_quantity'] = get_total_quantity_from_session_cart(self.request)
         return context
-
-
-class AddToCartView(View):
-    """
-    Представление: добавление товара в корзину
-    """
-
-    def post(self, request, *args, **kwargs):
-        product_id = kwargs.get('pk')
-        product = get_object_or_404(SellerProduct, id=product_id)
-        quantity = request.POST.get('amount', '1')
-        if not quantity.isdigit():
-            return HttpResponseBadRequest("Количество должно быть числом.")
-        quantity = int(quantity)
-        if quantity <= 0:
-            return HttpResponseBadRequest("Количество должно быть больше нуля.")
-
-        if request.user.is_authenticated:
-            cart, created = Cart.objects.get_or_create(user=request.user)
-            cart.add_product(product, quantity=quantity)
-        else:
-            add_to_session_cart(request, product_id, quantity)
-
-        return redirect('shop:product_detail', product.product.id)
 
 
 class CartItemDeleteView(View):
@@ -309,3 +250,55 @@ class CartItemUpdateView(View):
             update_session_cart(request, product_id, quantity)
 
         return redirect('shop:cart_detail')
+
+
+class Catalog(ListView):
+    """
+        Представление: каталог товаров
+    """
+    template_name = "shop/catalog.html"
+    context_object_name = "products"
+    paginate_by = 4
+
+    def get_queryset(self):
+        products = get_cached_products()
+        sort_param = self.request.GET.get('sort')
+        if sort_param:
+            if sort_param == 'popularity':
+                products = products.order_by('-popularity')
+            elif sort_param == 'price':
+                products = products.order_by('price')
+            elif sort_param == 'reviews':
+                products = products.order_by('-reviews')
+            elif sort_param == 'created_at':
+                products = products.order_by('-created_at')
+        return products
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        categories = get_cached_categories()
+        context['categories'] = categories
+        return context
+
+
+class CatalogProduct(ListView):
+    model = SellerProduct
+    template_name = "shop/catalog.html"
+    context_object_name = 'products'
+    category = None
+    paginate_by = 4
+    queryset = SellerProduct.objects.all()
+
+    def get_queryset(self):
+        if 'pk' in self.kwargs:
+            category = Category.objects.get(pk=self.kwargs['pk'])
+            product_ids = Product.objects.filter(category=category).values_list('id', flat=True)
+            queryset = SellerProduct.objects.filter(product__id__in=product_ids)
+
+            if not queryset.exists():
+                subcategories = Category.objects.filter(parent=category)
+                sub_products_ids = Product.objects.filter(category__in=subcategories).values_list('id', flat=True)
+                queryset = SellerProduct.objects.filter(product__id__in=sub_products_ids)
+
+            return queryset
+        return SellerProduct.objects.all()
