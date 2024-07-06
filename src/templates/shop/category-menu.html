@@ -14,7 +14,7 @@
                 <a href="{% url 'shop:catalog_list' category.pk %}">
                     <div class="CategoriesButton-icon">
                         {% if category.icon %}
-                            <img src="{{ category.icon.url }}" alt="">
+                            <img src="{{ category.icon.url }}" alt="{{ category.icon.name }}">
                         {% endif %}
                     </div>
                     <span class="CategoriesButton-text">{{ category.name }}</span>
