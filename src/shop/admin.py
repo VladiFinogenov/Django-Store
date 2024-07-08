@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.db.models import Prefetch
+from django.utils.html import format_html
+
 from .models import (
     Product,
     Review,
@@ -173,12 +176,29 @@ class ProductAdmin(admin.ModelAdmin):
         return []
 
 
+admin.site.register(Product, ProductAdmin)
+
+
+@admin.action(description='Удалить выбранные категории')
+def delete_selected_categories(modeladmin, request, queryset):
+    queryset.delete()
+
+
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [AttributesInLine]
 
+    change_list_template = 'shop/category/change_list.html'
 
-admin.site.register(Product, ProductAdmin)
-admin.site.register(Category, CategoryAdmin)
+    actions = [delete_selected_categories]
+    actions_on_top = True
+    actions_on_bottom = False  # Если вы не хотите действия снизу
+    add_button = True  # Это покажет кнопку "Добавить" справа сверху
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['categories'] = Category.objects.select_related('parent').all()
+        return super(CategoryAdmin, self).changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(Attribute)

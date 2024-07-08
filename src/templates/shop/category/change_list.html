@@ -1,0 +1,85 @@
+{% extends 'admin/change_list.html' %}
+
+{% block content %}
+<div class="content">
+    <h1>Category Hierarchies</h1>
+    <div id="content-main">
+        <ul class="object-tools">
+            <li>
+                <a href="{% url 'admin:shop_category_add' %}" class="addlink">Добавить категорию</a>
+            </li>
+        </ul>
+        <div id="changelist" class="module">
+            <div class="changelist-form-container">
+                <form id="changelist-form" action="" method="post">
+                    {% csrf_token %}
+                    <div class="actions">
+                        <label>Действие:
+                            <select name="action" required="">
+                                <option value="" selected="">---------</option>
+                                <option value="delete_selected">Удалить выбранные products</option>
+                            </select>
+                        </label>
+                        <input type="hidden" name="select_across" value="0" class="select-across">
+                        <button type="submit" class="button" title="Выполнить выбранное действие" name="index" value="0">Выполнить</button>
+                        <span>{{ cl.full_result_count }}</span>
+                    </div>
+                    <ul>
+                        {% for category in categories %}
+                            {% if not category.parent %}
+                                <li>
+                                    <input type="checkbox" name="_selected_action" value="{{ category.pk }}" class="action-select">
+                                    <a href="{% url 'admin:shop_category_change' category.pk %}">{{ category.name }}</a>
+                                    {% if category.children.all %}
+                                        <ul>
+                                            {% for child in category.children.all %}
+                                                <li>
+                                                    <input type="checkbox" name="_selected_action" value="{{ child.pk }}" class="action-select">
+                                                    <a href="{% url 'admin:shop_category_change' child.pk %}">{{ child.name }}</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrahead %}
+<style>
+    ul, li {
+        list-style-type: none;
+    }
+    li ul {
+        margin-left: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var checkboxes = document.querySelectorAll('input.action-select');
+        var selectedCount = document.getElementById('selected_count');
+
+        function updateSelectedCount() {
+            var count = document.querySelectorAll('input.action-select:checked').length;
+            selectedCount.textContent = 'Выбрано ' + count + ' объектов из ';
+        }
+
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+
+        updateSelectedCount();  // Вызовите функцию при загрузке страницы
+    });
+</script>
+{% endblock %}

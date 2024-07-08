@@ -3,7 +3,7 @@
         "model": "accounts.user",
         "pk": 2,
         "fields": {
-            "password": "pbkdf2_sha256$260000$2f2f3e868c6346a7bf1095832e4a5f59$55997d5924d2cf0116c2e50e963cdafc17bc9eb2ee0bed70810b6a34032ff150",
+            "password": "pbkdf2_sha256$600000$FovrcYJ3WPajX6S5XH4wxU$y19q9jySTejyUjonNOZogvjAvpQ2WFylufs8Tq8WW08=",
             "username": "Иванов",
             "last_name": "Иван",
             "middle_name": "Иванович",
