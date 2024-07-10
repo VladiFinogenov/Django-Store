@@ -33,7 +33,7 @@ from shop.models import (
     HistoryProduct,
 )
 from shop.forms import ReviewForm
-from django.db.models import Count
+from django.db.models import Count, Q
 from shop.services import get_cached_popular_products, get_limited_products, get_cached_products, get_cached_categories
 
 
@@ -258,7 +258,7 @@ class Catalog(ListView):
     """
     template_name = "shop/catalog.html"
     context_object_name = "products"
-    paginate_by = 4
+    paginate_by = 8
 
     def get_queryset(self):
         products = get_cached_products()
@@ -282,23 +282,32 @@ class Catalog(ListView):
 
 
 class CatalogProduct(ListView):
+    """
+    Представление выводит все продукты переданной категории.
+    """
+
     model = SellerProduct
     template_name = "shop/catalog.html"
     context_object_name = 'products'
     category = None
-    paginate_by = 4
+    paginate_by = 8
     queryset = SellerProduct.objects.all()
 
     def get_queryset(self):
+        queryset = SellerProduct.objects.all().select_related('product', 'product__category')
+
         if 'pk' in self.kwargs:
-            category = Category.objects.get(pk=self.kwargs['pk'])
-            product_ids = Product.objects.filter(category=category).values_list('id', flat=True)
-            queryset = SellerProduct.objects.filter(product__id__in=product_ids)
+            category_id = self.kwargs['pk']
+            category = Category.objects.filter(pk=category_id).first()
 
-            if not queryset.exists():
-                subcategories = Category.objects.filter(parent=category)
-                sub_products_ids = Product.objects.filter(category__in=subcategories).values_list('id', flat=True)
-                queryset = SellerProduct.objects.filter(product__id__in=sub_products_ids)
+            if category:
+                # Создаем фильтр по основной категории и подкатегориям
+                subcategories = Category.objects.filter(
+                    Q(pk=category_id) | Q(parent=category)
+                ).values_list('id', flat=True)
 
-            return queryset
-        return SellerProduct.objects.all()
+                # Фильтруем продукты по категориям
+                product_ids = Product.objects.filter(category__in=subcategories).values_list('id', flat=True)
+                queryset = queryset.filter(product__id__in=product_ids)
+
+        return queryset

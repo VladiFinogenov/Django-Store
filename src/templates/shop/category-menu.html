@@ -9,33 +9,43 @@
         </div>
     </div>
     <div class="CategoriesButton-content">
+
         {% for category in categories %}
-            {% if not category.parent %}
-                <div class="CategoriesButton-link">
-                    <a href="{% url 'shop:catalog_list' category.pk %}">
+
+            <div class="CategoriesButton-link">
+
+                {% if not category.parent %}
+
+                    <a href="{% url 'shop:catalog_products_list' category.pk %}">
                         <div class="CategoriesButton-icon">
                             {% if category.icon %}
                                 <img src="{{ category.icon.url }}" alt="{{ category.icon.name }}">
                             {% endif %}
                         </div>
                         <span class="CategoriesButton-text">{{ category.name }}</span>
-                        <a class="CategoriesButton-arrow" href="#"></a>
+                        {% if category.children.all %}
+                            <a class="CategoriesButton-arrow" href="#"></a>
+                        {% endif %}
                     </a>
                     <div class="CategoriesButton-submenu">
-                       {% if category.has_children %}
-                            {% for child in category.children.all %}
-                                {% if child in categories %}
-                                    <div class="CategoriesButton-link">
-                                        <a href="{% url 'shop:catalog_list' child.pk %}">
-                                            <span>{{ child.name }}</span>
-                                        </a>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
+
+                        {% for child in category.children.all %}
+                            {% if child in categories %}
+                                <div class="CategoriesButton-link">
+                                    <a href="{% url 'shop:catalog_products_list' child.pk %}">
+                                        <span>{{ child.name }}</span>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
                     </div>
-                </div>
-            {% endif %}
+
+                {% endif %}
+
+            </div>
+
         {% endfor %}
+
     </div>
 </div>

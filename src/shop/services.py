@@ -6,7 +6,7 @@ import os
 import datetime
 import json
 import shutil
-from django.db.models import Count
+from django.db.models import Count, Q
 
 
 def setup_logger(name, log_dir, log_file, level=logging.INFO):

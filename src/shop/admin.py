@@ -15,7 +15,8 @@ from .models import (
 from .forms import (
     AttributeFormSet,
     ProductAttributeFormSet,
-    CustomAttributeAdminForm
+    CustomAttributeAdminForm,
+    SellerProductAdminForm
 )
 
 
@@ -170,6 +171,8 @@ class ProductAdmin(admin.ModelAdmin):
        При создании объекта форма не будет отображаться
        """
 
+    list_filter = ['category', ]
+
     def get_formsets_with_inlines(self, request, obj=None):
         if obj:
             return super().get_formsets_with_inlines(request, obj)
@@ -179,21 +182,11 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 
 
-@admin.action(description='Удалить выбранные категории')
-def delete_selected_categories(modeladmin, request, queryset):
-    queryset.delete()
-
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [AttributesInLine]
 
     change_list_template = 'shop/category/change_list.html'
-
-    actions = [delete_selected_categories]
-    actions_on_top = True
-    actions_on_bottom = False  # Если вы не хотите действия снизу
-    add_button = True  # Это покажет кнопку "Добавить" справа сверху
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}

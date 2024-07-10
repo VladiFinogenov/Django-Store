@@ -75,16 +75,6 @@ class Category(models.Model):
         null=True
     )
 
-    def get_absolute_url(self):
-        return reverse('admin:app_category_change', args=[self.id])
-
-    @property
-    def is_root(self):
-        return self.parent is None
-
-    def get_descendants(self):
-        return Category.objects.filter(parent=self)
-
     def __str__(self):
         return self.name
 

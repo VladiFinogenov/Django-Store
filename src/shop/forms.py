@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.forms import BaseInlineFormSet
 
 from shop.admin_mixin import UniqueAttributeMixin
-from shop.models import Attribute, ProductAttribute, Review
+from shop.models import Attribute, ProductAttribute, Review, SellerProduct, Product
 
 
 class ProductFilterForm(forms.Form):
@@ -116,3 +116,17 @@ class ReviewForm(forms.ModelForm):
             'class': 'form-textarea'
         })
         self.fields['text'].label = False
+
+
+class SellerProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = SellerProduct
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(SellerProductAdminForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # Получить существующие продукты, привязанные к текущему продавцу
+            selected_products = SellerProduct.objects.filter(seller=self.instance.seller).values_list('product_id', flat=True)
+            # Исключить эти продукты из queryset
+            self.fields['product'].queryset = Product.objects.exclude(id__in=selected_products)
