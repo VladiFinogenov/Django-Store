@@ -71,44 +71,17 @@
                                         </div>
                                     </div>
                                 </div>
-                                {% for cart_item in cart_items %}
-                                <div class="Cart-product">
-                                    <div class="Cart-block Cart-block_row">
-                                        <div class="Cart-block Cart-block_pict">
-                                            <a class="Cart-pict" href="#">
-                                                <img class="Cart-img" src="{{ cart_item.product.product.preview.url }}" alt="card.jpg"/>
-                                            </a>
-                                        </div>
-                                        <div class="Cart-block Cart-block_info">
-                                            <a class="Cart-title" href="#">
-                                                {{ cart_item.product.product.name }}
-                                            </a>
-                                            <div class="Cart-desc">
-                                                {{ cart_item.product.product.description }}
-                                            </div>
-                                        </div>
-                                        <div class="Cart-block Cart-block_price">
-                                            <div class="Cart-price">
-                                                {{ cart_item.price }}$
-                                            </div>
-                                        </div>
-                                        <div class="Cart-block Cart-block_row">
-                                            <div class="Cart-block Cart-block_amount">
-                                                {{ cart_item.quantity }} шт
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-
                                 <div class="Cart Cart_order">
                                     <div class="Cart-total">
                                         <div class="Cart-block Cart-block_total">
                                             <strong class="Cart-title">Итого:
-                                            </strong><span class="Cart-price">{{ total_price }}</span>
+                                            </strong><span class="Cart-price">{{ total_price }}$</span>
                                         </div>
                                         <div class="Cart-block">
-                                            <button class="btn btn_primary btn_lg" type="submit">Оплатить
+                                            <button class="btn btn_primary btn_lg" type="submit">
+                                                <a style="color: #fff; border-bottom: none !important" href="{% url 'payment:checkout' %}">
+                                                    Оплатить
+                                                </a>
                                             </button>
                                         </div>
                                     </div>
@@ -118,10 +91,10 @@
                                 </div>
                             </div>
                         </div>
+
                     </form>
                     
                 </div>
-
             </div>
         </div>
     </div>

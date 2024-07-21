@@ -60,7 +60,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
-src/db.sqlite3
+db.sqlite3
 db.sqlite3-journal
 
 # Flask stuff:
@@ -104,6 +104,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.env.docker
+.env.local
 .env
 .venv
 env/
@@ -145,5 +147,3 @@ data/
 /uploads/
 cache/
 
-!media/
-!media/images/

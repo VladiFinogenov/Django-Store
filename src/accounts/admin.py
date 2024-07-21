@@ -11,7 +11,6 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': (
             'username',
-            'middle_name',
             'last_name',
             'birth_date',
             'phone',
@@ -26,7 +25,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('email', 'phone', 'password1', 'password2'),
         }),
     )
-    search_fields = ('email', 'first_name', 'last_name')
+    search_fields = ('email', 'username', 'last_name')
     ordering = ('email',)
     filter_horizontal = ()
 

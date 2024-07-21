@@ -2,9 +2,10 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import BaseInlineFormSet
+from django.utils.translation import gettext_lazy as _
 
 from shop.admin_mixin import UniqueAttributeMixin
-from shop.models import Attribute, ProductAttribute, Review, SellerProduct, Product
+from shop.models import Attribute, ProductAttribute, Review
 
 
 class ProductFilterForm(forms.Form):
@@ -28,6 +29,10 @@ class ProductFilterForm(forms.Form):
     free_delivery = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={
         'class': 'toggle'
     }))
+
+
+class TagsForm(forms.Form):
+    tags = forms.CharField(required=False)
 
 
 class CustomAttributeAdminForm(forms.ModelForm):
@@ -101,7 +106,6 @@ class ProductAttributeFormSet(BaseInlineFormSet, UniqueAttributeMixin):
 
 
 class ReviewForm(forms.ModelForm):
-
     class Meta:
         model = Review
         fields = ['text']
@@ -112,21 +116,11 @@ class ReviewForm(forms.ModelForm):
         self.fields['text'].widget.attrs.update({
             'name': "review",
             'id': "review",
-            'placeholder': 'Отзывы',
+            'placeholder': _("Отзывы"),
             'class': 'form-textarea'
         })
         self.fields['text'].label = False
 
 
-class SellerProductAdminForm(forms.ModelForm):
-    class Meta:
-        model = SellerProduct
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(SellerProductAdminForm, self).__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            # Получить существующие продукты, привязанные к текущему продавцу
-            selected_products = SellerProduct.objects.filter(seller=self.instance.seller).values_list('product_id', flat=True)
-            # Исключить эти продукты из queryset
-            self.fields['product'].queryset = Product.objects.exclude(id__in=selected_products)
+class JSONImportForm(forms.Form):
+    json_file = forms.FileField(label='Выберите JSON-файл')

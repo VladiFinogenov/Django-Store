@@ -6,7 +6,7 @@ import os
 import datetime
 import json
 import shutil
-from django.db.models import Count, Q
+from django.db.models import Count
 
 
 def setup_logger(name, log_dir, log_file, level=logging.INFO):
@@ -78,14 +78,6 @@ def import_seller_products(import_file_path):
     else:
         shutil.move(import_file_path, os.path.join(failed_imports_dir, os.path.basename(import_file_path)))
 
-
-# def get_cached_categories():
-#     cache_key = 'categories'
-#     categories = cache.get(cache_key)
-#     if categories is None:
-#         categories = Category.objects.filter(products__available=True).distinct()
-#         cache.set(cache_key, categories, settings.DEFAULT_CACHE_TIME)
-#     return categories
 
 def get_cached_categories():
     cache_key = 'categories'

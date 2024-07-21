@@ -23,7 +23,6 @@ class UserDataForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        print(self.user, self.user)
         if self.user and self.user.is_authenticated:
             return email
 

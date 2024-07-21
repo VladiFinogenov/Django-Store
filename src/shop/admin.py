@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.db.models import Prefetch
-from django.utils.html import format_html
+from django.urls import path
 
+from .forms import AttributeFormSet, ProductAttributeFormSet, CustomAttributeAdminForm
 from .models import (
     Product,
     Review,
@@ -10,20 +10,18 @@ from .models import (
     ProductAttribute,
     Seller,
     SellerProduct,
-    HistoryProduct,
+    Cart,
+    CartItem,
+    HistoryProduct, SiteSettings,
+
 )
-from .forms import (
-    AttributeFormSet,
-    ProductAttributeFormSet,
-    CustomAttributeAdminForm,
-    SellerProductAdminForm
-)
+from .utils import import_json, reset_cache_all, reset_cache_products, reset_cache_seller_products
 
 
 @admin.register(HistoryProduct)
 class HistoryProductAdmin(admin.ModelAdmin):
-    list_display = ('user', 'product', 'created_at')
-    list_filter = ('user', 'created_at')
+    list_display = ['user', 'product', 'created_at']
+    list_select_related = ['product', 'user']
 
     def has_add_permission(self, request):
         """
@@ -38,53 +36,6 @@ class HistoryProductAdmin(admin.ModelAdmin):
         """
 
         return False
-
-    def user_name(self, obj):
-        return obj.user.username
-
-    user_name.short_description = 'User'
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'product__category__parent')
-
-
-@admin.register(Seller)
-class SellerAdmin(admin.ModelAdmin):
-    list_display = ["pk", "name", "email", "phone", "address"]
-    list_display_links = ["pk", "name"]
-
-
-@admin.register(SellerProduct)
-class SellerProductAdmin(admin.ModelAdmin):
-    list_display = ["pk", "product", "price", "quantity"]
-    list_display_links = ["product"]
-    change_list_template = "shop/admin/change-list.html"
-
-    def get_queryset(self, request):
-        """
-        Продавец может видеть только свои SellerProduct
-        """
-        queryset = super().get_queryset(request)
-        if request.user.is_superuser:
-            return queryset
-        return queryset.filter(seller__user=request.user)
-
-    def save_model(self, request, obj, form, change):
-        """
-        Текущий пользователь указывается как Seller для созданного SellerProduct
-        Суперпользователь может выбирать из выпадающего списка Seller для SellerProduct
-        """
-        if not change and not request.user.is_superuser:
-            obj.seller = request.user.seller
-        obj.save()
-
-    def get_exclude(self, request, obj=None):
-        """
-        Если не суперпользователь, то выпадающий список со всеми Seller отсутствует
-        """
-        if not request.user.is_superuser:
-            return ("seller",)
-        return super().get_exclude(request, obj)
 
 
 @admin.register(Review)
@@ -171,41 +122,115 @@ class ProductAdmin(admin.ModelAdmin):
        При создании объекта форма не будет отображаться
        """
 
-    list_filter = ['category', ]
-
     def get_formsets_with_inlines(self, request, obj=None):
         if obj:
             return super().get_formsets_with_inlines(request, obj)
         return []
 
 
-admin.site.register(Product, ProductAdmin)
-
-
-@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [AttributesInLine]
 
-    change_list_template = 'shop/category/change_list.html'
 
-    def changelist_view(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['categories'] = Category.objects.select_related('parent').all()
-        return super(CategoryAdmin, self).changelist_view(request, extra_context=extra_context)
+admin.site.register(Product, ProductAdmin)
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Cart)
+admin.site.register(CartItem)
 
 
 @admin.register(Attribute)
 class AttributeAdmin(admin.ModelAdmin):
-    list_display = ['category', 'name', 'unit', ]
-    list_editable = ['name', 'unit',]
+    list_display = ['category', 'name', 'unit', 'attribute_category']
+    list_editable = ['name', 'unit', 'attribute_category']
     list_filter = ['category', ]
     fieldsets = [
         ('Категория', {
             'fields': ('category',)
         }),
         ('Характеристика', {
-            'fields': ('name', 'unit',)
+            'fields': ('name', 'unit', 'attribute_category')
         }),
     ]
 
     form = CustomAttributeAdminForm
+
+
+@admin.register(Seller)
+class SellerAdmin(admin.ModelAdmin):
+    list_display = ["pk", "name", "email", "phone", "address"]
+    list_display_links = ["pk", "name"]
+
+
+@admin.register(SellerProduct)
+class SellerProductAdmin(admin.ModelAdmin):
+    list_display = ["pk", "product", "price", "quantity"]
+    list_display_links = ["product"]
+    change_list_template = "shop/admin/change-list.html"
+
+    def get_queryset(self, request):
+        """
+        Продавец может видеть только свои SellerProduct
+        """
+        queryset = super().get_queryset(request)
+        if request.user.is_superuser:
+            return queryset
+        return queryset.filter(seller__user=request.user)
+
+    def save_model(self, request, obj, form, change):
+        """
+        Текущий пользователь указывается как Seller для созданного SellerProduct
+        Суперпользователь может выбирать из выпадающего списка Seller для SellerProduct
+        """
+        if not change and not request.user.is_superuser:
+            obj.seller = request.user.seller
+        obj.save()
+
+    def get_exclude(self, request, obj=None):
+        """
+        Если не суперпользователь, то выпадающий список со всеми Seller отсутствует
+        """
+        if not request.user.is_superuser:
+            return ("seller",)
+        return super().get_exclude(request, obj)
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    change_list_template = "shop/admin/settings_changelist.html"
+    list_display = [field.name for field in SiteSettings._meta.get_fields()]
+
+    def has_add_permission(self, request):
+        # Запрет добавление записи, если уже существует одна
+        if SiteSettings.objects.exists():
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        # Запрет удаления записи
+        return False
+
+    def get_urls(self):
+        urls = super().get_urls()
+        new_urls = [
+            path(
+                "import_settings/",
+                import_json,
+                name="import_settings_json",
+            ),
+            path(
+                "reset_cache_all/",
+                reset_cache_all,
+                name="reset_cache_all",
+            ),
+            path(
+                "reset_cache_products/",
+                reset_cache_products,
+                name="reset_cache_products",
+            ),
+            path(
+                "reset_cache_seller_products/",
+                reset_cache_seller_products,
+                name="reset_cache_seller_products",
+            ),
+        ]
+        return new_urls + urls

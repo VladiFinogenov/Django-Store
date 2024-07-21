@@ -1,9 +1,9 @@
-from django.db import models
-from django.urls import reverse
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
+from django.db import models
+from django.db.models import F, Sum, DecimalField
+from django.urls import reverse
 from taggit.managers import TaggableManager
-from django.db.models import Sum, F, DecimalField
 
 
 def product_preview_directory_path(instance: "Product", filename: str) -> str:
@@ -33,7 +33,7 @@ class HistoryProduct(models.Model):
 
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE
     )
     product = models.ForeignKey(
         to='Product',
@@ -47,33 +47,27 @@ class HistoryProduct(models.Model):
     history = HistoryProductManager()
 
 
+def category_icon_directory_path(instance: "Category", filename: str):
+    return 'shop/icon/category_{pk}/{filename}'.format(
+        pk=instance.pk,
+        filename=filename
+    )
+
+
 class Category(models.Model):
     """
-    Модель Category представляет категорию
-    для модели Product, указанная ниже.
+      Модель Category представляет категорию
+      для модели Product, указанная ниже.
     """
 
     class Meta:
         ordering = ['name']
-        verbose_name = "category"
-        verbose_name_plural = 'Categories'
+        verbose_name = 'category'
+        verbose_name_plural = 'categories'
 
-    name = models.CharField(
-        max_length=100,
-        db_index=True
-    )
-    parent = models.ForeignKey(
-        to='self',
-        on_delete=models.CASCADE,
-        related_name='children',
-        null=True,
-        blank=True
-    )
-    icon = models.ImageField(
-        upload_to='assets/img/icons/departments/',
-        blank=True,
-        null=True
-    )
+    name = models.CharField(max_length=100, db_index=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
+    icon = models.ImageField(null=True, blank=True, upload_to=category_icon_directory_path)
 
     def __str__(self):
         return self.name
@@ -81,8 +75,8 @@ class Category(models.Model):
 
 class Product(models.Model):
     """
-    Модель Product представляет товар,
-    который можно продавать в интернет-магазине.
+      Модель Product представляет товар,
+      который можно продавать в интернет-магазине.
     """
 
     class Meta:
@@ -90,24 +84,10 @@ class Product(models.Model):
         verbose_name = "product"
         verbose_name_plural = "products"
 
-    name = models.CharField(
-        max_length=100,
-        db_index=True
-    )
-    description = models.TextField(
-        blank=True,
-        null=True
-    )
-    preview = models.ImageField(
-        null=True,
-        blank=True,
-        upload_to=product_preview_directory_path
-    )
-    category = models.ForeignKey(
-        to=Category,
-        on_delete=models.CASCADE,
-        related_name='products'
-    )
+    name = models.CharField(max_length=100, db_index=True)
+    description = models.TextField(blank=True, null=True)
+    preview = models.ImageField(null=True, blank=True, upload_to=product_preview_directory_path)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     available = models.BooleanField(default=True)
     tags = TaggableManager(blank=True)
 
@@ -156,27 +136,18 @@ class Attribute(models.Model):
     """
     Модель Attribute определяет структуру данных для хранения характеристик товаров.
     Имеет связь один-ко-многим с Category.
-    Поля name (имя характеристики) и unit (единица измерения)
-    """
+    Поля name (имя характеристики), unit (единица измерения), attribute_category (название категории: Экран, Общие параметры итд)
 
-    name = models.CharField(
-        max_length=100,
-        verbose_name='характеристика'
-    )
-    unit = models.CharField(
-        max_length=50,
-        blank=True,
-        default='',
-        verbose_name='единица измерения'
-    )
-    category = models.ForeignKey(
-        to=Category,
-        blank=True,
-        null=True,
-        related_name='attribute_names',
-        on_delete=models.CASCADE,
-        verbose_name='категория'
-    )
+    """
+    name = models.CharField(max_length=100, verbose_name='характеристика')
+    unit = models.CharField(max_length=50, blank=True, default='', verbose_name='единица измерения')
+    attribute_category = models.CharField(max_length=50, verbose_name='категория атрибута')
+    category = models.ForeignKey(Category,
+                                 blank=True,
+                                 null=True,
+                                 related_name='attribute_names',
+                                 on_delete=models.CASCADE,
+                                 verbose_name='категория')
 
     def __str__(self):
         return self.name
@@ -188,22 +159,24 @@ class ProductAttribute(models.Model):
     Также связь с моделью Attribute.
     """
 
-    product = models.ForeignKey(
-        Product,
-        related_name='attributes',
-        on_delete=models.CASCADE,
-        verbose_name='товар'
-        )
-    attribute = models.ForeignKey(
-        Attribute,
-        related_name='attributes',
-        on_delete=models.CASCADE,
-        verbose_name='характеристика',
-      )
-    value = models.CharField(
-        max_length=250,
-        verbose_name='значение'
-    )
+    product = models.ForeignKey(Product,
+                                related_name='attributes',
+                                on_delete=models.CASCADE,
+                                verbose_name='товар'
+                                )
+    attribute = models.ForeignKey(Attribute,
+                                  related_name='attributes',
+                                  on_delete=models.CASCADE,
+                                  verbose_name='характеристика',
+                                  )
+    value = models.CharField(max_length=250, verbose_name='значение')
+
+    def __str__(self):
+        return self.value
+
+    @property
+    def attribute_name(self):
+        return self.attribute.name
 
 
 class Seller(models.Model):
@@ -215,31 +188,19 @@ class Seller(models.Model):
     class Meta:
         ordering = ["name"]
 
-    user = models.OneToOneField(
-        to=settings.AUTH_USER_MODEL,
-        related_name="seller",
-        on_delete=models.CASCADE
-    )
-    name = models.CharField(
-        max_length=20,
-        db_index=True,
-        null=False
-    )
-    thumbnail = models.ImageField(
-        null=True,
-        blank=True,
-        upload_to=seller_thumbnail_directory_path
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="seller", on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, db_index=True, null=False)
+    thumbnail = models.ImageField(null=True, blank=True, upload_to=seller_thumbnail_directory_path)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     address = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
-    def get_absolute_url(self):
-        return reverse("seller_details", kwargs={"pk": self.pk})
-
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("seller_details", kwargs={"pk": self.pk})
 
 
 class SellerProduct(models.Model):
@@ -252,6 +213,9 @@ class SellerProduct(models.Model):
     product = models.ForeignKey(Product, related_name="seller_products", on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    free_delivery = models.BooleanField(default=False)
+    is_limited = models.BooleanField(default=False)
 
     def __str__(self):
         return self.product.name
@@ -262,6 +226,7 @@ class Cart(models.Model):
     Модель Cart представляет корзину, в которую можно добавлять товары.
     """
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
+    discount = models.ForeignKey('discounts.CartDiscount', on_delete=models.SET_NULL, related_name='carts', null=True, blank=True)
 
     def __str__(self):
         return f"Cart number {self.id} -- User: {self.user.email} -- Total price: {self.total_price()}"
@@ -307,3 +272,26 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"id: {self.id}. Name: {self.product.product.name} -- Cart# {self.cart.id} -- Quantity: {self.quantity} -- Price: {self.price}"
+
+
+class SiteSettings(models.Model):
+    delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='стоимость доставки')
+    support_email = models.EmailField(max_length=254, verbose_name="Электронная почта поддержки", blank=True, null=True)
+    popular_products_count_on_main_page = models.IntegerField(
+        default=8,
+        verbose_name='количество популярных товаров на главной странице',
+        validators=[MaxValueValidator(100)]
+    )
+
+    products_count_in_limited_EDITION = models.IntegerField(
+        default=4,
+        verbose_name='количество товаров в ограниченном тираже',
+        validators=[MaxValueValidator(16)]
+    )
+
+    class Meta:
+        verbose_name = "Настройки сайта"
+        verbose_name_plural = "Настройки сайта"
+
+    def __str__(self):
+        return "Настройки сайта"

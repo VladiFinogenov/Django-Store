@@ -1,6 +1,5 @@
 from django.urls import path
-from django.urls import path
-from shop.views import (
+from .views import (
     ProductDetailView,
     ReviewCreateView,
     AddToCartView,
@@ -10,10 +9,9 @@ from shop.views import (
     IndexView,
     Catalog,
     CatalogProduct
-
 )
-app_name = "shop"
 
+app_name = "shop"
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),

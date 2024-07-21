@@ -1,12 +1,11 @@
 {% load static %}
+{% load i18n %}
 <div class="CategoriesButton">
     <div class="CategoriesButton-title">
-        <div class="CategoriesButton-icon">
-            <img src="{% static 'assets/img/icons/allDep.svg' %}" alt="allDep.svg">
+        <div class="CategoriesButton-icon"><img src="{% static 'assets/img/icons/allDep.svg' %}" alt="allDep.svg">
         </div>
-        <span class="CategoriesButton-text">Все категории</span>
-        <div class="CategoriesButton-arrow">
-        </div>
+        <span class="CategoriesButton-text">{% translate 'Все категории' %}</span>
+        <div class="CategoriesButton-arrow"></div>
     </div>
     <div class="CategoriesButton-content">
 
@@ -46,6 +45,5 @@
             </div>
 
         {% endfor %}
-
     </div>
 </div>

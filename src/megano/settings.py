@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,6 +42,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
+    "django.contrib.sites",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -48,9 +52,11 @@ INSTALLED_APPS = [
     'banners.apps.BannersConfig',
     'accounts.apps.AccountsConfig',
     'shop.apps.ProductsConfig',
-    'orders.apps.OrdersConfig',
     'comparison.apps.ComparisonConfig',
     'discounts.apps.DiscountsConfig',
+    'orders.apps.OrdersConfig',
+    'payments.apps.PaymentsConfig',
+    # 'django_redis',
 ]
 
 MIDDLEWARE = [
@@ -100,6 +106,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'shop.context_processors.categories',
+                'shop.context_processors.info_cart',
             ],
         },
     },
@@ -117,23 +124,16 @@ DATABASES = {
     }
 }
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-#         'LOCATION': '127.0.0.1:11211',
-#     }
-# }
-
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
-#         "HOST": os.environ.get("DB_HOST"),
-#         "NAME": os.environ.get("DB_NAME"),
-#         "USER": os.environ.get("DB_USER"),
-#         "PASSWORD": os.environ.get("DB_PASS"),
+#         "HOST": os.getenv("DB_HOST"),
+#         "PORT": os.getenv("DB_PORT"),
+#         "NAME": os.getenv("DB_NAME"),
+#         "USER": os.getenv("DB_USER"),
+#         "PASSWORD": os.getenv("DB_PASS"),
 #     }
 # }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -157,7 +157,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 
-TIME_ZONE = 'Europe/Moscow'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -173,11 +173,11 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-LOGIN_REDIRECT_URL = '/'
-
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -188,6 +188,47 @@ DEFAULT_CACHE_TIME = 24 * 60 * 60
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# VIEWED_SESSION_ID = 'recently_viewed'
+LANGUAGE_CODE = 'ru'
 
-SESSION_SAVE_EVERY_REQUEST = True
+LANGUAGES = [
+    ('en', gettext_lazy('English')),
+    ('ru', gettext_lazy('Russian')),
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Celery and Redis sittings
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = DEFAULT_CACHE_TIME
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": 'redis://redis:6379/1',
+#     }
+# }
+
+
+STRIPE_PUBLISHABLE_KEY = '<your key>'
+STRIPE_SECRET_KEY = '<your key>'
+
+SITE_ID=1
+
+LOGOUT_REDIRECT_URL = '/accounts/login/'

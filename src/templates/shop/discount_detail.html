@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block middle %}
+    <h1>{{ object.name }}</h1>
+    <p>{{ object.description }}</p>
+    {% if object.valid_from and object.valid_to %}
+    <div class="valid-dates">
+        {{ object.valid_from|date:"d/m/Y" }} - {{ object.valid_to|date:"d/m/Y" }}
+    </div>
+    {% endif %}
+    <p>Скидка:</p>
+    {% if object.discount %}
+        {{ object.discount }} %
+    {% elif object.discount_amount %}
+        {{ object.discount_amount }} %
+    {% elif object.discount_price %}
+        {{ object.discount_price }} руб
+    {% endif %}
+{% endblock %}
