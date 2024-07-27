@@ -19,26 +19,26 @@
                         </div>
                         <!--                            <div class="ProductCard-picts">-->
                         <!--                                <a class="ProductCard-pict ProductCard-pict_ACTIVE" href="assets/img/content/home/bigGoods.png">-->
-                        <!--                                    <img src="assets/img/content/home/bigGoods.png" alt="bigGoods.png" />-->
+                        <!--                                    <img app="assets/img/content/home/bigGoods.png" alt="bigGoods.png" />-->
                         <!--                                </a>-->
                         <!--                                <a class="ProductCard-pict" href="assets/img/content/home/slider.png">-->
-                        <!--                                    <img src="assets/img/content/home/slider.png" alt="slider.png" />-->
+                        <!--                                    <img app="assets/img/content/home/slider.png" alt="slider.png" />-->
                         <!--                                </a>-->
                         <!--                                <a class="ProductCard-pict" href="assets/img/content/home/videoca.png">-->
-                        <!--                                    <img src="assets/img/content/home/videoca.png" alt="videoca.png" />-->
+                        <!--                                    <img app="assets/img/content/home/videoca.png" alt="videoca.png" />-->
                         <!--                                </a>-->
                         <!--                            </div>-->
                     </div>
                     <!--                        <div class="ProductCard-picts">-->
                     <!--                            <a class="ProductCard-pict ProductCard-pict_ACTIVE"-->
                     <!--                               href="assets/img/content/home/bigGoods.png">-->
-                    <!--                                <img src="{% if product.preview %}{{ product.preview.url }}{% else %}{% static 'assets/img/content/sale/default_product.png' %}{% endif %}" alt="product_image"/>-->
+                    <!--                                <img app="{% if product.preview %}{{ product.preview.url }}{% else %}{% static 'assets/img/content/sale/default_product.png' %}{% endif %}" alt="product_image"/>-->
                     <!--                            </a>-->
                     <!--                            <a class="ProductCard-pict" href="assets/img/content/home/slider.png">-->
-                    <!--                                <img src="assets/img/content/home/slider.png" alt="slider.png"/>-->
+                    <!--                                <img app="assets/img/content/home/slider.png" alt="slider.png"/>-->
                     <!--                            </a>-->
                     <!--                            <a class="ProductCard-pict" href="assets/img/content/home/videoca.png">-->
-                    <!--                                <img src="assets/img/content/home/videoca.png" alt="videoca.png"/>-->
+                    <!--                                <img app="assets/img/content/home/videoca.png" alt="videoca.png"/>-->
                     <!--                            </a>-->
                     <!--                        </div>-->
 
@@ -86,7 +86,7 @@
                             <form method="POST" action="{% url 'comparison:service_add' pk %}">
                                 {% csrf_token %}
                                 <button class="btn btn_primary">
-                                    <!--                                                <img class="btn-icon" src="{% static 'assets/img/icons/exchange.svg' %}" alt="exchange.svg">-->
+                                    <!--                                                <img class="btn-icon" app="{% static 'assets/img/icons/exchange.svg' %}" alt="exchange.svg">-->
                                     <span class="btn-content">{% translate 'Сравнить' %}</span>
                                 </button>
                             </form>
