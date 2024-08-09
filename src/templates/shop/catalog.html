@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block header %}
+    {% include "header.html" %}
+{% endblock %}
+
+{% block middle %}
+<div class="Middle Middle_top">
+        <div class="Section Section_column Section_columnLeft">
+            <div class="wrap">
+                <div class="Section-column">
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">
+                                {% translate 'Фильтр' %}
+                            </strong>
+                        </header>
+                        <div class="Section-columnContent">
+                            <form class="form" action="{% url 'shop:product_list' %}" method="get">
+                                <div class="form-group">
+                                    <div class="range Section-columnRange">
+                                        <input type="text" class="range-line irs-hidden-input" id="price" name="price" data-type="double" data-min="{{ data_min }}" data-max="{{ data_max }}" data-from="{{ data_min }}" data-to="{{ data_max }}" tabindex="-1" readonly style="display: none;">
+                                            <div class="range-price">Цена:
+                                                <div class="rangePrice">$7 - $27</div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                <div class="form-group">
+                                    <input class="form-input form-input_full" id="title" name="title" type="text" placeholder="Название">
+                                </div>
+                                <div class="form-group">
+                                    <label class="toggle">
+                                        <input type="checkbox" name="in_stock" value="true">
+                                        <span class="toggle-box"></span>
+                                        <span class="toggle-text">Только товары в наличии</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="toggle">
+                                        <input type="checkbox" name="free_delivery" value="true">
+                                        <span class="toggle-box"></span>
+                                        <span class="toggle-text">С бесплатной доставкой</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <div class="buttons">
+                                        <button type="submit" class="btn btn_square btn_dark btn_narrow">Фильтр</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="Section-columnSection">
+                        <header class="Section-header">
+                            <strong class="Section-title">{% translate 'Популярные тэги' %}</strong>
+                        </header>
+                        <form class="form" action="{% url 'shop:product_list' %}" method="get">
+                            <div class="Section-columnContent">
+                                <div class="buttons">
+                                     {% for tag in tags %}
+                                         <button type="submit" id="tags" name="tags" value="{{ tag.slug }}" class="btn btn_default btn_sm">
+                                             {{ tag.name }}
+                                         </button>
+                                     {% endfor %}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="Section-content">
+                    <div class="Sort">
+                        <div class="Sort-title">{% translate 'Сортировать по' %}:</div>
+                            <div class="Sort-variants">
+                                {% if request.GET.sort == 'popularity' %}
+                                    <a class="Sort-sortBy Sort-sortBy_dec" href="?sort=-popularity&tag={{ request.GET.tag }}">{% translate 'Популярности' %}</a>
+                                {% elif request.GET.sort == '-popularity' %}
+                                    <a class="Sort-sortBy Sort-sortBy_inc" href="?sort=popularity&tag={{ request.GET.tag }}">{% translate 'Популярности' %}</a>
+                                {% else %}
+                                    <a class="Sort-sortBy" href="?sort=popularity&tag={{ request.GET.tag }}">{% translate 'Популярности' %}</a>
+                                {% endif %}
+
+                                {% if request.GET.sort == 'price' %}
+                                    <a class="Sort-sortBy Sort-sortBy_dec" href="?sort=-price&tag={{ request.GET.tag }}">{% translate 'цене' %}</a>
+                                {% elif request.GET.sort == '-price' %}
+                                    <a class="Sort-sortBy Sort-sortBy_inc" href="?sort=price&tag={{ request.GET.tag }}">{% translate 'цене' %}</a>
+                                {% else %}
+                                    <a class="Sort-sortBy" href="?sort=price&tag={{ request.GET.tag }}">{% translate 'цене' %}</a>
+                                {% endif %}
+
+                                {% if request.GET.sort == 'reviews' %}
+                                    <a class="Sort-sortBy Sort-sortBy_dec" href="?sort=-reviews&tag={{ request.GET.tag }}">{% translate 'отзывам' %}</a>
+                                {% elif request.GET.sort == '-reviews' %}
+                                    <a class="Sort-sortBy Sort-sortBy_inc" href="?sort=reviews&tag={{ request.GET.tag }}">{% translate 'отзывам' %}</a>
+                                {% else %}
+                                    <a class="Sort-sortBy" href="?sort=reviews&tag={{ request.GET.tag }}">{% translate 'отзывам' %}</a>
+                                {% endif %}
+
+                                {% if request.GET.sort == 'created_at' %}
+                                    <a class="Sort-sortBy Sort-sortBy_dec" href="?sort=-created_at&tag={{ request.GET.tag }}">{% translate 'Новизне' %}</a>
+                                {% elif request.GET.sort == '-created_at' %}
+                                    <a class="Sort-sortBy Sort-sortBy_inc" href="?sort=created_at&tag={{ request.GET.tag }}">{% translate 'Новизне' %}</a>
+                                {% else %}
+                                    <a class="Sort-sortBy" href="?sort=created_at&tag={{ request.GET.tag }}">{% translate 'Новизне' %}</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    <div class="Cards">
+                        {% for product in products %}
+                        <div class="Card">
+                            <a class="Card-picture" href="{% url 'shop:product_detail' pk=product.product.pk %}">
+                                <img src="{% if product.product.preview %}{{ product.product.preview.url }}{% else %}
+                                {% static 'assets/img/content/sale/default_product.png' %}{% endif %}" alt="{{ product.product.name }}" />
+                            </a>
+                            <div class="Card-content">
+                                <strong class="Card-title">
+                                    <a href="{% url 'shop:product_detail' pk=product.product.pk %}">{{ product.product.name }}</a>
+                                </strong>
+                                <div class="Card-description">
+                                    <div class="Card-cost">
+                                        <span class="Card-price">${{ product.price }}</span>
+                                    </div>
+                                    <div class="Card-category">
+                                        {{ product.product.category.name }}
+                                    </div>
+                                    <div class="Card-hover">
+                                         <form action="{% url 'shop:add_to_cart' pk=product.pk %}" method="post">
+                                            {% csrf_token %}
+                                                <button type="submit" class="Card-btn">
+                                                    <img src="{% static 'assets/img/icons/card/cart.svg' %}" alt="cart.svg" />
+                                                </button>
+                                         </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% include "includes/pagination_for_catalog.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block footer %}
+    {% include "footer.html" %}
+{% endblock %}

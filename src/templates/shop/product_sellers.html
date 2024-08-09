@@ -1,0 +1,55 @@
+{% load static %}
+{% load i18n %}
+<div class="Section-content">
+    <div class="Orders">
+        {% for seller_product in seller_products %}
+        <div class="Order Order_anons">
+            <div class="Order-personal">
+                <div class="row">
+                    <div class="row-block">
+                        <a class="Order-title" href="#">
+                            {{seller_product.seller.name}}
+                        </a>
+                        <div class="ProductCard-cartElement" style="margin-top: 10px;">
+                            <form action="{% url 'shop:add_to_cart' pk=seller_product.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn_primary" >
+                                    <img class="btn-icon" src="{% static 'assets/img/icons/card/cart_white.svg' %}" alt="cart_white.svg"/>
+                                    <span class="btn-content">{% translate 'Купить' %}</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row-block">
+                        <div class="Order-info Order-info_delivery">
+                            <div class="Order-infoType">
+                                {% translate 'Тип доставки' %}:
+                            </div>
+                            <div class="Order-infoContent">
+                                {% translate 'Обычная доставка' %}
+                            </div>
+                        </div>
+                        <div class="Order-info Order-info_pay">
+                            <div class="Order-infoType">
+                                {% translate 'Оплата' %}:
+                            </div>
+                            <div class="Order-infoContent">
+                                {% translate 'Онлайн картой' %}
+                            </div>
+                        </div>
+                        <div class="Order-info">
+                            <div class="Order-infoType">
+                                {% translate 'Стоимость' %}:
+                            </div>
+                            <div class="Order-infoContent">
+                                <span class="Order-price">{{seller_product.price}}$</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
