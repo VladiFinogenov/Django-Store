@@ -14,7 +14,7 @@
 `Сначала клонируйте репозиторий на ваш локальный компьютер. Для этого выполните следующую команду:`
 
 ```bash
-git clone https://gitlab.skillbox.ru/pythondjango_team41/teamproject_41.git
+git clone https://github.com/VladiFinogenov/Django-Store.git
 ```
 
 ## Шаг 2: Переход в директорию проекта
