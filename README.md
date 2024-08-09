@@ -1,24 +1,13 @@
-# TeamProject_41
+# Django-Store
 
-
+`Описание`
+```
+Маркетплейс на которой продавцы смогут разместить информацию о себе и своём товаре. 
+Онлайновый торговый центр или, другими словами, интернет-магазин, являющийся агрегатором товаров различных продавцов.
+```
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.skillbox.ru/pythondjango_team41/teamproject_41.git
-git branch -M master
-git push -uf origin master
-```
 
 ## Шаг 1: Клонирование репозитория
 
@@ -31,7 +20,7 @@ git clone https://gitlab.skillbox.ru/pythondjango_team41/teamproject_41.git
 ## Шаг 2: Переход в директорию проекта
 
 ```bash
-cd teamproject_41
+cd Django-Store
 ```
 
 ## Шаг 3: Настройка переменных окружения
