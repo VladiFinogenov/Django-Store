@@ -35,8 +35,9 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', default=0)
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
+CSRF_TRUSTED_ORIGINS = str(os.getenv('CSRF_TRUSTED_ORIGINS')).split(' ')
 # Application definition
 
 INSTALLED_APPS = [

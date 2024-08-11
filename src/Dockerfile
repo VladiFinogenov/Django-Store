@@ -6,17 +6,18 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED=1
 
 # Устанавливаем рабочую директорию
-WORKDIR /app
-
-# Копируем файлы requirements.txt в контейнер
-COPY requirements.txt /app
+WORKDIR /usr/app/src
 
 # Устанавливаем зависимости Python
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip "poetry==1.8.3"
+# Отключение создания виртуального окружения
+RUN poetry config virtualenvs.create false --local
+COPY pyproject.toml poetry.lock ./
+
+RUN poetry install
 
 # Копируем весь проект в контейнер
-COPY . /app/
+COPY . /usr/src/app
 
 # Указываем, что контейнер будет слушать на порту 8000
 EXPOSE 8000

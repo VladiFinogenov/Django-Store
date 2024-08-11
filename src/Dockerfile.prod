@@ -2,35 +2,34 @@
 # BUILDER #
 ###########
 
-FROM python:3.11-slim AS builder
+FROM python:3.11.0-alpine AS builder
 
 WORKDIR /usr/src/app
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# установка зависимостей
-RUN apt-get update \
-    && apt-get install -y \
-       libpq-dev \
-       gcc \
-       python3-dev \
-       musl-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Установка системных зависимостей
+RUN apk update \
+    && apk add postgresql-dev gcc python3-dev musl-dev
 
-RUN pip install --upgrade pip
+# Установка Poetry
+RUN pip install --upgrade pip "poetry==1.8.3"
 
-# установка зависимостей
-COPY ./requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+# Настройка Poetry для установки без создания виртуального окружения
+RUN poetry config virtualenvs.create false --local
 
+# Копирование зависимостей проекта
+COPY pyproject.toml poetry.lock ./
+
+# Установка зависимостей
+RUN poetry install --no-root --no-dev
 
 #########
 # FINAL #
 #########
 
-FROM python:3.11-slim
+FROM python:3.11.0-alpine
 
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/web
@@ -38,23 +37,27 @@ ENV APP_HOME=/home/app/web
 # создаем домашнюю директорию для пользователя(/home/app) и директорию для проекта(/home/app/web)
 # создаем группу app и отдельного пользователя app
 RUN mkdir -p $APP_HOME \
-    && groupadd -r app \
-    && useradd -r -g app app
+    && addgroup -S app \
+    && adduser -S app -G app \
+    && apk update \
+    && apk add libpq
 
-# установка необходимых пакетов
-RUN apt-get update \
-    && apt-get install -y libpq-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Установка Poetry в финальной стадии
+RUN pip install poetry
 
-# копирование из builder и установка зависимостей
-COPY --from=builder /usr/src/app/wheels /wheels
-RUN pip install --no-cache /wheels/*
+# Устанавливаем рабочую директорию
+WORKDIR /usr/src/app
+
+# Копируем файлы проекта и зависимости из builder
+COPY --from=builder /usr/src/app /usr/src/app
+
+# Устанавливаем зависимости через Poetry
+RUN poetry install --no-root --no-dev
 
 # устанавливаем рабочую директорию
 WORKDIR $APP_HOME
 
-# копирование проекта Django в рабочую директорию
+# Копирование проекта в рабочую директорию
 COPY . .
 
 # изменение владельца, для всех директорий и файлов проекта, на пользователя app
@@ -63,5 +66,5 @@ RUN chown -R app:app .
 # изменение рабочего пользователя на app
 USER app
 
-# RUN chmod 777 entrypoint.prod.sh
-# ENTRYPOINT ["/home/src/web/entrypoint.prod.sh"]
+#RUN chmod +x entrypoint.prod.sh
+#ENTRYPOINT ["./entrypoint.prod.sh"]
