@@ -113,3 +113,80 @@ docker compose -f docker-compose.yml exec web python manage.py loaddata fixtures
 `Зарегистрируйте домен на удобном для вас сервисе` [AdminVPS](https://adminvps.ru/) `или на` [рег.ру](https://www.reg.ru/)
 
 ![Покупка домена](src/static/images/domain-purchase.png)
+
+## Шаг 2: Настройка домена
+
+`!Пример с рег.ру`
+
+`В настройках DNS-серверы нажать изменить`
+
+![Настройка dns](src/static/images/dns-server.png)
+
+`Выбрать бесплатные DNS серверы`
+
+![Настройка dns](src/static/images/dns-server2.png)
+
+`Настроить две записи`
+
+![Настройка dns](src/static/images/dns-server3.png)
+
+`После обновления данных на сервере проверить привязку ip к доменному имени выполнив команду в терминале:`
+
+`ping ваше_доменное_имя`
+`ping www. ваше_доменное_имя`
+
+## Шаг 3: Настройка ssh подключения к VPS серверу
+
+`Настроите свой ключ ssh для подключения к VPS серверу`
+
+`Подключитесь через терминал к VPS серверу`
+
+## Шаг 4: Разворачивание проекта на сервере
+
+### Обновление пакетов и перезагрузка сервера
+
+`Обновим список пакетов:`
+`apt update`
+`Обновление установленных пакетов:`
+`apt upgrade -y`
+`Проверим необходимость перезагрузки после обновления, выполним:`
+`ls /var/run/reboot-required`
+`Если файл reboot-required существует, то необходимо перезагрузить сервер, выполним команду:`
+`reboot`
+
+### Установка дополнительных пакетов
+
+`apt install apt-transport-https ca-certificates curl software-properties-common -y`
+
+### Установка Docker
+
+`Теперь добавим в свою систему ключ, GPG, для официального репозитория Docker:`
+
+`curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg`
+
+
+`Затем добавим репозиторий Docker в источники пакетов APT:`
+
+`echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null`
+
+`Обновляем список пакетов:`
+`apt update`
+
+`Установим Docker, выполним:`
+
+`apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y`
+
+`Проверим статус службы docker, выполним:`
+
+`systemctl status docker`
+
+### Перенос и настройка проекта
+
+`Перейти в директорию /home`
+
+`cd /home`
+
+`Выполнить шаги из Getting started внеся правки в файл .env`
+
+`Внести изменения и добавить доменные имена в настройки docker-compose.prod.yml и nginx/.conf`
+
