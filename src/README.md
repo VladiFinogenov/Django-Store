@@ -111,4 +111,4 @@ docker compose -f docker-compose.yml exec web python manage.py loaddata fixtures
 ## Шаг 2: Регистрация домена
 
 `Зарегистрируйте домен на удобном для вас сервисе` [AdminVPS](https://adminvps.ru/) `или на` [рег.ру](https://www.reg.ru/)
-![domain-purchase.png](static%2Fimages%2Fdomain-purchase.png)
+![Покупка домена](static/images/domain-purchase.png)
