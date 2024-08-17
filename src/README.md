@@ -29,7 +29,8 @@ cd Django-Store
 ```
 DEBUG = True
 DJANGO_SECRET_KEY = 'django-insecure-xxxxxxxxxxxx'
-DJANGO_ALLOWED_HOSTS = *
+DJANGO_ALLOWED_HOSTS = *  # # На проде укажите ваше_доменное_имя
+CSRF_TRUSTED_ORIGINS = *  # На проде укажите http://ваше_доменное_имя https://ваше_доменное_имя
 
 DB_ENGINE = "django.db.backends.postgresql"  # замените это значение если хотите использовать SQlite3 'django.db.backends.sqlite3'
 DB_HOST = 'db'
@@ -100,3 +101,14 @@ docker compose -f docker-compose.yml exec web python manage.py createsuperuser
 ```bash
 docker compose -f docker-compose.yml exec web python manage.py loaddata fixtures/full-data.json
 ```
+
+# Настройка сервера
+
+## Шаг 1: Аренда VPS сервера
+
+`Арендуйте VPS сервер например` [AdminVPS](https://adminvps.ru/) `или на` [рег.ру](https://www.reg.ru/)
+
+## Шаг 2: Регистрация домена
+
+`Зарегистрируйте домен на удобном для вас сервисе` [AdminVPS](https://adminvps.ru/) `или на` [рег.ру](https://www.reg.ru/)
+![domain-purchase.png](static%2Fimages%2Fdomain-purchase.png)

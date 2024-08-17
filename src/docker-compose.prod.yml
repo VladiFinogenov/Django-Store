@@ -1,5 +1,5 @@
 # Задаём имя проекта
-name: megano-test
+name: megano
 
 services:
     web:
@@ -9,14 +9,15 @@ services:
         # Запускаем встроенный сервер Django
         command: >
             sh -c "
-            ls megano && gunicorn megano.wsgi:application --bind 0.0.0.0:8002
+            ls megano && gunicorn megano.wsgi:application --bind 0.0.0.0:8000
             "
         # Примонтируем том static-data к директории /home/app/web/static контейнера web
         volumes:
           - static-data:/home/app/web/static
+          - media-data:/home/app/web/media
         # Пробрасываем 8000 порт контейнера на 8000 порт локалхоста(127.0.0.1:8000)
         ports:
-            - 127.0.0.1:8002:8002
+            - 80000:8000
         # Файл содержащий переменные окружения для контейнера
         env_file:
             - .env
@@ -69,10 +70,21 @@ services:
             - 80:80
         # Примонтируем том static-data к директории /home/app/web/static контейнера nginx
         volumes:
-          - static-data:/home/app/web/static
+            - static-data:/home/app/web/static
+            - media-data:/home/app/web/media
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
         # Дожидаемся запуска контейнера web
         depends_on:
             - web
+    certbot:
+        image: certbot/certbot
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        command: certonly --webroot --webroot-path=/var/www/certbot/ --email ваш@email --agree-tos --no-eff-email -d имя_вашего_домена -d www.имя_вашего_домена
+        depends_on:
+            - nginx
 
     celery:
         build:
@@ -103,5 +115,6 @@ services:
 volumes:
     # Объявляем том postgres-data для хранения данных PostgreSQL
     postgres-data:
-    # Объявляем том static-data для хранения статических файлов
+    # Объявляем том static-data и media-data для хранения статических и медиа файлов
     static-data:
+    media-data:
