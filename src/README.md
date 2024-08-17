@@ -112,4 +112,4 @@ docker compose -f docker-compose.yml exec web python manage.py loaddata fixtures
 
 `Зарегистрируйте домен на удобном для вас сервисе` [AdminVPS](https://adminvps.ru/) `или на` [рег.ру](https://www.reg.ru/)
 
-![Покупка домена](static/images/domain-purchase.png)
+![Покупка домена](/static/images/domain-purchase.png)
