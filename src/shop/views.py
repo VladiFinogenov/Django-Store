@@ -28,8 +28,6 @@ from shop.models import (Cart, CartItem, Category, HistoryProduct, Product,
 from shop.services import (get_cached_categories, get_cached_popular_products,
                            get_limited_products)
 from shop.utils import (add_to_session_cart, get_cart_from_session,
-                        get_total_price_from_session_cart,
-                        get_total_quantity_from_session_cart,
                         remove_from_session_cart, update_session_cart)
 
 
@@ -225,8 +223,7 @@ class CartDetailView(DetailView):
             context['total_quantity'] = cart.total_quantity()
         else:
             context['cart_items'] = get_cart_from_session(self.request)
-            context['total_price'] = get_total_price_from_session_cart(self.request)
-            context['total_quantity'] = get_total_quantity_from_session_cart(self.request)
+            # context['total_price'] = get_total_price_from_session_cart(self.request)
         return context
 
 
