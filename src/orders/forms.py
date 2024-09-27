@@ -6,11 +6,11 @@ from accounts.models import User
 
 class UserDataForm(forms.Form):
     full_name = forms.CharField(
-        label='Full Name',
+        label='ФИО',
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Иванов Иван Иванович'})
     )
     phone = forms.CharField(
-        label='Phone',
+        label='Телефон',
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': '+7 (___) ___-__-__'})
     )
     email = forms.EmailField(
