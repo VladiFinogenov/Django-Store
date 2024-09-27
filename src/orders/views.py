@@ -192,13 +192,25 @@ class Step4OrderConfirmation(FormView):
         cart = Cart.objects.get(user=user)
         cart_items = CartItem.objects.filter(cart=cart)
 
-        for cart_item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                seller_product=cart_item.product,
-                quantity=cart_item.quantity,
-                price=cart_item.price
-            )
+        # for cart_item in cart_items:
+        #     OrderItem.objects.create(
+        #         order=order,
+        #         seller_product=cart_item.product,
+        #         quantity=cart_item.quantity,
+        #         price=cart_item.price
+        #     )
+
+        order_items = [
+            OrderItem(order=order, seller_product=cart_item.product,
+                      quantity=cart_item.quantity, price=cart_item.price)
+            for cart_item in cart_items
+        ]
+
+        OrderItem.objects.bulk_create(order_items)
+
+        context = self.get_context_data()
+        context['order_number'] = order.id
+        cache.set('order_number', order.id)
 
         if payment_method == 'Онлайн картой':
             return render(self.request, template_name='orders/payment-by-card.html')
