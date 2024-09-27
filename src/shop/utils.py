@@ -18,10 +18,17 @@ def get_cart_from_session(request):
     cart = request.session.get('cart', {})
     cart_items_objs = []
     for key, value in cart.items():
-        product = SellerProduct.objects.get(pk=int(key))
-        cart_item = CartItem(id=int(key), product=product, quantity=cart[key]['quantity'],
-                             price=Decimal(cart[key]['price']))
-        cart_items_objs.append(cart_item)
+        try:
+            product = get_object_or_404(SellerProduct, pk=int(key))
+            cart_item = CartItem(
+                id=int(key),
+                product=product,
+                quantity=value['quantity'],
+                price=Decimal(value['price'])
+            )
+            cart_items_objs.append(cart_item)
+        except (SellerProduct.DoesNotExist, KeyError, ValueError):
+            continue  # Игнорирует некорректные ключи и значения
     return cart_items_objs
 
 
@@ -39,7 +46,7 @@ def add_to_session_cart(request, product_id, quantity):
             'quantity': quantity,
             'price': str(product.price),
         }
-    save_cart_to_session(request, cart)
+    request.session['cart'] = cart
 
 
 def get_total_price_from_session_cart(request):
