@@ -23,7 +23,7 @@ class Order(models.Model):
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    order_status = models.CharField(max_length=50, default='Pending')
+    order_status = models.CharField(max_length=50, default='В процессе')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     promocode = models.CharField(max_length=50, null=True, blank=True)
@@ -43,11 +43,11 @@ class Order(models.Model):
         return f"Order #{self.pk}"
 
     def mark_as_paid(self):
-        self.order_status = 'Paid'
+        self.order_status = 'Оплачен'
         self.save()
 
     def cancel_order(self):
-        self.order_status = 'Cancelled'
+        self.order_status = 'Отменен'
         self.save()
 
 
