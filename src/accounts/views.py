@@ -1,6 +1,8 @@
 import os
 import smtplib
 
+from django.db.models import Sum, F, FloatField
+from django.db.models.functions import Cast
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView
@@ -13,7 +15,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import (CreateView, DetailView, ListView, UpdateView,
                                   View)
 
-from orders.models import Order
+from orders.models import Order, OrderItem
 from shop.models import HistoryProduct
 
 from .forms import PasswordChangeForm, UserRegisterForm, UserUpdateForm
@@ -171,5 +173,13 @@ class UserHistoryOrderView(ListView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Order.objects.filter(user=user).order_by('-created_at')
+        # Используем аннотацию для подсчета итоговой суммы для каждого заказа
+        queryset = Order.objects.filter(user=user).prefetch_related('items').annotate(
+            total_price=Cast(Sum(F('items__price') * F('items__quantity')), FloatField())
+        ).order_by('-created_at')
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
