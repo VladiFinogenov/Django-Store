@@ -41,15 +41,15 @@ class PaymentProcess(View):
         else:
             print("No items in cart to delete.")
 
-        order_data = cache.get('order_data', {})
-        order_number = order_data.get('order_number')
+        order_number = cache.get('order_number')
+
+        order = get_object_or_404(Order, pk=order_number)
+        order.order_status = OrderStatus.PAID.value
+
+        order.save()
 
         if not order_number:
             return redirect('shop:cart_detail')
-
-        order = get_object_or_404(Order, pk=order_number)
-        order.order_status = OrderStatus.PAID
-        order.save()
 
         return redirect('shop:cart_detail')
 
