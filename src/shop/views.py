@@ -284,32 +284,31 @@ class CatalogProduct(ListView):
         selected_category_id = self.kwargs.get('pk')
 
         if selected_category_id:
-            # Получаем категорию и её дочерние категории
             category = get_object_or_404(Category, pk=selected_category_id)
-            children = category.children.prefetch_related('children__products').all()
-            queryset = SellerProduct.objects.filter(product__category__in=[category] + list(children))
+            # Получаем все родительские и дочерние категории
+            categories = Category.objects.filter(id=selected_category_id).values_list('id', flat=True)
+            child_categories = category.children.values_list('id', flat=True)
+            all_categories = list(categories) + list(child_categories)
+            queryset = SellerProduct.objects.filter(product__category__in=all_categories).select_related('product',
+                                                                                                         'product__category')
         else:
-            # Если категория не выбрана, возвращаем все продукты
             queryset = SellerProduct.objects.prefetch_related('product__category').all()
 
+        # Обрабатываем сортировку
         if sort_param:
             if sort_param == 'popularity':
-                popular_products = get_cached_popular_products()
+                popular_products = get_cached_popular_products()  # Убедитесь, что эта функция работает корректно
                 popular_product_ids = [p.product_id for p in popular_products]
                 queryset = queryset.filter(product__id__in=popular_product_ids)
-            elif sort_param == 'price':
-                queryset = queryset.order_by('price')
-            elif sort_param == '-price':
-                queryset = queryset.order_by('-price')
-            elif sort_param == 'reviews':
-                queryset = queryset.annotate(num_reviews=Count('product__reviews')).order_by('-num_reviews')
-            elif sort_param == '-reviews':
-                queryset = queryset.annotate(num_reviews=Count('product__reviews')).order_by('num_reviews')
-            elif sort_param == 'created_at':
-                queryset = queryset.order_by('-created_at')
-            elif sort_param == '-created_at':
-                queryset = queryset.order_by('created_at')
+            elif sort_param in ['price', '-price']:
+                queryset = queryset.order_by(sort_param)
+            elif sort_param in ['reviews', '-reviews']:
+                queryset = queryset.annotate(num_reviews=Count('product__reviews'))
+                queryset = queryset.order_by('-num_reviews' if sort_param == 'reviews' else 'num_reviews')
+            elif sort_param in ['created_at', '-created_at']:
+                queryset = queryset.order_by('-created_at' if sort_param == 'created_at' else 'created_at')
 
+        # Обработка форм фильтрации
         form = ProductFilterForm(self.request.GET)
         if form.is_valid():
             price = form.cleaned_data.get('price')
@@ -318,8 +317,11 @@ class CatalogProduct(ListView):
             free_delivery = form.cleaned_data.get('free_delivery')
 
             if price:
-                min_price, max_price = map(Decimal, price.split(';'))
-                queryset = queryset.filter(price__range=(min_price, max_price))
+                try:
+                    min_price, max_price = map(Decimal, price.split(';'))
+                    queryset = queryset.filter(price__range=(min_price, max_price))
+                except ValueError:
+                    pass  # Здесь можно логировать ошибку или обрабатывать ее как нужно
             if title:
                 queryset = queryset.filter(product__name__icontains=title)
             if in_stock:
@@ -331,20 +333,17 @@ class CatalogProduct(ListView):
         if tags_form.is_valid():
             tags = tags_form.cleaned_data.get('tags')
             if tags:
-                queryset = queryset.filter(product__tags__slug__icontains=tags)
+                queryset = queryset.filter(product__tags__slug__in=tags)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        categories = get_cached_categories()
-        context['categories'] = categories
 
         selected_category_id = self.kwargs.get('pk')
-        selected_category = Category.objects.filter(pk=selected_category_id).first()
-
-        if selected_category:
-            selected_products = SellerProduct.objects.filter(product__category=selected_category)
+        if selected_category_id:
+            selected_category = get_object_or_404(Category, pk=selected_category_id)
+            selected_products = SellerProduct.objects.filter(product__category=selected_category).prefetch_related('product__category')
         else:
             selected_products = SellerProduct.objects.all()  # Получаем все продукты, если категории нет
 
