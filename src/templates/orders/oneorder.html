@@ -89,12 +89,14 @@
                                             <div class="Order-infoContent">{{ order.order_status }}
                                             </div>
                                         </div>
-                                        <div class="Order-info Order-info_error">
-                                            <div class="Order-infoType">Оплата не прошла:
+                                        {% if order.order_status != 'Оплачен' %}
+                                            <div class="Order-info Order-info_error">
+                                                <div class="Order-infoType">Оплата не прошла:
+                                                </div>
+                                                <div class="Order-infoContent">Оплата не выполнена
+                                                </div>
                                             </div>
-                                            <div class="Order-infoContent">Оплата не выполнена
-                                            </div>
-                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
