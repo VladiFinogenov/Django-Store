@@ -153,7 +153,16 @@ class UserHistoryProductView(View):
 
     def get(self, request, *args, **kwargs):
         user = request.user.pk
-        history = HistoryProduct.objects.filter(user=user)[:8]
+
+        # Получаем историю просмотренных продуктов с использованием select_related для категорий
+        # Получаем только последние 8 товаров
+        history = (
+            HistoryProduct.objects.filter(user=user)
+            .prefetch_related('product__category')  # Подгружаем связанные категории для продуктов
+            .select_related('product')  # Подгружаем данные продукта
+            [:8]
+        )
+
         return render(request, template_name='accounts/history-product.html',
                       context={'recently_viewed_products': history})
 
